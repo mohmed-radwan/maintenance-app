@@ -3,187 +3,168 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Maintenance & Store Management</title>
+<title>Maintena — Equipment & Maintenance</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{--navy:#14243a;--blue:#2563eb;--bg:#f3f6fb;--line:#e2e8f0;--text:#172033;--muted:#64748b;--green:#15803d;--red:#b91c1c;--amber:#b45309}
-*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--text)}
-header{background:var(--navy);color:#fff;padding:16px 22px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
-header h1{font-size:20px;margin:0}header small{color:#cbd5e1}
-#login{max-width:420px;margin:8vh auto;background:#fff;padding:28px;border-radius:14px;box-shadow:0 8px 30px #0f172a12}
-#login h2{margin-top:0}.shell{display:none;max-width:1500px;margin:auto;padding:18px}
-.nav{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
-.nav button{background:#fff;color:#334155;border:1px solid var(--line);padding:10px 13px;border-radius:8px;cursor:pointer}
-.nav button.active{background:var(--blue);color:#fff;border-color:var(--blue)}
-.page{display:none}.page.active{display:block}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px}
-.card,.panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px}
-.card .num{font-size:28px;font-weight:700;margin-top:8px}.muted{color:var(--muted);font-size:13px}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
-label{display:block;font-size:13px;font-weight:700;margin:10px 0 5px}
-input,select,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;font:inherit}
-textarea{min-height:70px;resize:vertical}button.primary{background:var(--blue);color:#fff;border:0;padding:10px 15px;border-radius:7px;cursor:pointer;margin-top:12px}
-button.secondary{background:#e2e8f0;color:#1e293b;border:0;padding:9px 12px;border-radius:7px;cursor:pointer}
-button.danger{background:#fee2e2;color:#991b1b;border:0;padding:9px 12px;border-radius:7px;cursor:pointer}
-.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.panel{margin-bottom:16px}.panel h2{margin:0 0 12px;font-size:18px}
-.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:650px}th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line);font-size:13px}th{background:#f8fafc;color:#475569}
-.badge{display:inline-block;padding:4px 8px;border-radius:20px;background:#e2e8f0;font-size:12px}.badge.red{background:#fee2e2;color:#991b1b}.badge.green{background:#dcfce7;color:#166534}.badge.amber{background:#fef3c7;color:#92400e}
-.msg{padding:10px;border-radius:8px;margin:12px 0;display:none}.msg.ok{display:block;background:#dcfce7;color:#166534}.msg.err{display:block;background:#fee2e2;color:#991b1b}
-h2.section{margin:8px 0 14px}.hint{background:#eff6ff;padding:12px;border-radius:8px;color:#1e40af;font-size:13px;margin-bottom:14px}
-@media(max-width:600px){.shell{padding:10px}header{padding:14px}.nav button{flex:1}}
+:root{--bg:#f4f7fb;--panel:#fff;--ink:#172235;--muted:#718096;--line:#e7edf4;--blue:#2563eb;--blue2:#eaf1ff;--green:#0f9f6e;--red:#dc4c4c;--amber:#d99017;--nav:#101d33;--shadow:0 8px 28px #1a2b4610}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Inter,Arial,sans-serif;color:var(--ink)}button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:none!important}
+.login-wrap{min-height:100vh;display:grid;place-items:center;padding:24px;background:linear-gradient(135deg,#0f1e36,#1c3b68)}
+.login-card{width:min(420px,100%);background:#fff;border-radius:20px;padding:34px;box-shadow:0 24px 70px #0003}.brand{display:flex;align-items:center;gap:12px;font-weight:800;font-size:21px}.brand-mark{width:42px;height:42px;border-radius:13px;background:var(--blue);color:#fff;display:grid;place-items:center;font-size:22px}.login-card h1{font-size:25px;margin:28px 0 8px}.sub{color:var(--muted);font-size:13px;line-height:1.6}
+.field{display:flex;flex-direction:column;gap:7px;margin:13px 0}.field label{font-size:12px;font-weight:700;color:#526176}.field input,.field select,.field textarea{width:100%;border:1px solid var(--line);border-radius:9px;padding:11px 12px;background:#fff;color:var(--ink);outline:none}.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--blue);box-shadow:0 0 0 3px #2563eb18}.field textarea{min-height:75px;resize:vertical}
+.btn{border:0;border-radius:9px;padding:10px 15px;font-weight:700;font-size:13px;background:var(--blue);color:#fff}.btn:hover{filter:brightness(.96)}.btn.secondary{background:#edf2f8;color:#34445a}.btn.danger{background:#fff0f0;color:var(--red)}.btn.small{padding:7px 10px;font-size:12px}.btn.full{width:100%;padding:12px}.error{color:var(--red);font-size:12px;margin-top:10px;min-height:16px}
+.app{display:flex;min-height:100vh}.sidebar{width:250px;background:var(--nav);color:#d9e3f3;padding:22px 15px;display:flex;flex-direction:column;flex-shrink:0}.sidebar .brand{padding:0 10px 28px;color:#fff}.sidebar .brand-mark{background:#3478f6}.nav-label{font-size:10px;text-transform:uppercase;letter-spacing:1.3px;color:#7f91ac;padding:14px 12px 8px;font-weight:800}.nav-btn{width:100%;border:0;background:transparent;color:#b9c7da;text-align:left;padding:11px 12px;border-radius:9px;display:flex;gap:12px;align-items:center;font-size:13px;margin:2px 0}.nav-btn:hover,.nav-btn.active{background:#223653;color:#fff}.nav-btn .ico{width:18px;text-align:center;font-size:16px}.sidebar-bottom{margin-top:auto;border-top:1px solid #2b3b53;padding:15px 8px 0;font-size:11px;color:#8ea0b8}
+.main{flex:1;min-width:0}.topbar{height:72px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 30px;position:sticky;top:0;z-index:5}.top-title{font-weight:800;font-size:17px}.userbox{display:flex;align-items:center;gap:12px;font-size:12px;color:var(--muted)}.avatar{width:34px;height:34px;border-radius:50%;background:var(--blue2);color:var(--blue);display:grid;place-items:center;font-weight:800}
+.content{padding:28px 30px;max-width:1600px;margin:auto}.page-head{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:22px}.page-head h1{font-size:23px;margin:0 0 6px}.page-head p{font-size:12px;color:var(--muted);margin:0}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px;margin-bottom:20px}.stat,.panel{background:var(--panel);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow)}.stat{padding:18px}.stat-top{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px;font-weight:600}.stat-icon{width:34px;height:34px;border-radius:10px;background:var(--blue2);display:grid;place-items:center;font-size:17px}.stat-value{font-size:27px;font-weight:800;margin-top:13px}.stat-note{font-size:11px;color:var(--muted);margin-top:5px}
+.grid2{display:grid;grid-template-columns:1.2fr .8fr;gap:16px;margin-bottom:18px}.panel{padding:19px;min-width:0}.panel-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}.panel-head h3{font-size:14px;margin:0}.panel-head span{font-size:11px;color:var(--muted)}.chartbox{height:230px;position:relative}.table-panel{padding:0;overflow:hidden}.table-head{padding:18px 19px;display:flex;justify-content:space-between;align-items:center;gap:12px;border-bottom:1px solid var(--line)}.table-head h3{font-size:14px;margin:0}.table-tools{display:flex;gap:8px;align-items:center}.search{border:1px solid var(--line);border-radius:8px;padding:8px 10px;font-size:12px;width:210px;outline:none}
+.table-wrap{overflow:auto}table{border-collapse:collapse;width:100%;min-width:650px}th,td{padding:12px 17px;text-align:left;border-bottom:1px solid #edf1f6;font-size:12px;white-space:nowrap}th{background:#fafbfd;color:#7b899b;font-size:10px;text-transform:uppercase;letter-spacing:.5px}td{color:#34445a}tbody tr:hover{background:#fafcff}.empty{text-align:center;padding:35px;color:var(--muted)}
+.badge{display:inline-flex;padding:5px 8px;border-radius:20px;font-size:10px;font-weight:700;background:#edf2f7;color:#59677a}.badge.green{background:#e7f8f0;color:#0d8b60}.badge.red{background:#fff0f0;color:#c83e3e}.badge.amber{background:#fff6e5;color:#ae7410}.badge.blue{background:#eaf1ff;color:#2563eb}
+.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 15px}.form-grid .wide{grid-column:1/-1}.form-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:12px}.modal-backdrop{position:fixed;inset:0;background:#0d1b2d80;z-index:20;display:grid;place-items:center;padding:18px}.modal{width:min(720px,100%);max-height:90vh;overflow:auto;background:#fff;border-radius:16px;padding:22px;box-shadow:0 20px 80px #0004}.modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px}.modal-head h2{font-size:17px;margin:0}.close{border:0;background:#f0f3f8;border-radius:8px;width:30px;height:30px;font-size:18px}.alert-list{display:flex;flex-direction:column;gap:9px}.alert-item{display:flex;justify-content:space-between;gap:10px;padding:11px;border:1px solid var(--line);border-radius:9px;font-size:12px}.muted{color:var(--muted)}.mobile-menu{display:none}
+@media(max-width:1050px){.sidebar{width:215px}.stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:760px){.sidebar{position:fixed;z-index:15;left:-260px;top:0;bottom:0;transition:.2s}.sidebar.open{left:0}.topbar{padding:0 16px}.content{padding:20px 15px}.mobile-menu{display:inline-block;border:0;background:#eef3fb;padding:8px 10px;border-radius:8px;margin-right:10px}.grid2{grid-template-columns:1fr}.page-head{align-items:flex-start;flex-direction:column}.stats{gap:10px}.stat{padding:14px}.stat-value{font-size:23px}.search{width:140px}.form-grid{grid-template-columns:1fr}.form-grid .wide{grid-column:auto}}
 </style>
 </head>
 <body>
-<header><div><h1>Maintenance & Store Management</h1><small>Equipment • Inventory • Work Orders</small></div><button id="logout" class="secondary" style="display:none" onclick="logout()">Logout</button></header>
-
-<section id="login">
-<h2>Admin Login</h2><p class="muted">Sign in using your Supabase account.</p>
-<div id="loginMsg" class="msg"></div>
-<label>Email</label><input id="email" type="email" autocomplete="username" placeholder="admin@example.com">
-<label>Password</label><input id="password" type="password" autocomplete="current-password" placeholder="Password">
-<button class="primary" style="width:100%" onclick="login()">Sign In</button>
-</section>
-
-<main id="app" class="shell">
-<div id="globalMsg" class="msg"></div>
-<nav class="nav">
-<button class="active" data-page="dashboard" onclick="showPage('dashboard',this)">Dashboard</button>
-<button data-page="equipment" onclick="showPage('equipment',this)">Equipment</button>
-<button data-page="warehouses" onclick="showPage('warehouses',this)">Warehouses</button>
-<button data-page="suppliers" onclick="showPage('suppliers',this)">Suppliers</button>
-<button data-page="parts" onclick="showPage('parts',this)">Spare Parts</button>
-<button data-page="stock" onclick="showPage('stock',this)">Stock Movement</button>
-<button data-page="workorders" onclick="showPage('workorders',this)">Work Orders</button>
-<button data-page="maintenance" onclick="showPage('maintenance',this)">Maintenance</button>
-<button data-page="reports" onclick="showPage('reports',this)">Equipment Reports</button>
-</nav>
-
-<section id="dashboard" class="page active">
-<h2 class="section">Dashboard</h2>
-<div class="cards">
-<div class="card">Total Equipment<div class="num" id="dEquipment">0</div></div>
-<div class="card">Spare Part Items<div class="num" id="dParts">0</div></div>
-<div class="card">Open Work Orders<div class="num" id="dWork">0</div></div>
-<div class="card">Low Stock Alerts<div class="num" id="dAlerts">0</div></div>
-<div class="card">Maintenance Records<div class="num" id="dMaint">0</div></div>
+<div id="loginScreen" class="login-wrap">
+  <div class="login-card">
+    <div class="brand"><div class="brand-mark">⚙</div><div>MAINTENA</div></div>
+    <h1>Welcome back</h1><div class="sub">Sign in to manage your equipment, maintenance activities and spare parts inventory.</div>
+    <form id="loginForm">
+      <div class="field"><label>Email address</label><input id="email" type="email" required autocomplete="username" placeholder="name@company.com"></div>
+      <div class="field"><label>Password</label><input id="password" type="password" required autocomplete="current-password" placeholder="Enter your password"></div>
+      <button class="btn full" type="submit">Sign in</button><div id="loginError" class="error"></div>
+    </form>
+  </div>
 </div>
-<div class="panel"><h2>Low Stock Alerts</h2><div id="dashAlerts" class="tablewrap">Loading...</div></div>
-<div class="panel"><h2>Recent Stock Movements</h2><div id="recentStock" class="tablewrap">Loading...</div></div>
-</section>
-
-<section id="equipment" class="page">
-<h2 class="section">Equipment</h2>
-<div class="panel"><h2>Register Equipment</h2><div class="grid">
-<div><label>Equipment Code *</label><input id="eq_code" required></div>
-<div><label>Equipment Model *</label><input id="eq_model" required></div>
-<div><label>Serial Number</label><input id="eq_serial"></div>
-<div><label>Project</label><input id="eq_project"></div>
-<div><label>Current Location</label><input id="eq_location"></div>
-<div><label>Current Operating Hours</label><input id="eq_hours" type="number" min="0" value="0"></div>
-<div><label>Last Maintenance Date</label><input id="eq_last" type="date"></div>
-<div><label>Next Maintenance Due Hours</label><input id="eq_due" type="number" min="0"></div>
-<div><label>Status</label><select id="eq_status"><option>Active</option><option>Under Maintenance</option><option>Out of Service</option></select></div>
-<div><label>Notes</label><input id="eq_notes"></div>
-</div><button class="primary" onclick="addEquipment()">Save Equipment</button></div>
-<div class="panel"><div class="actions"><h2 style="margin-right:auto">Equipment List</h2><button class="secondary" onclick="loadEquipment()">Refresh</button></div><div id="equipmentTable" class="tablewrap"></div></div>
-</section>
-
-<section id="warehouses" class="page">
-<h2 class="section">Warehouses</h2>
-<div class="panel"><h2>Add Warehouse</h2><div class="grid">
-<div><label>Warehouse Code *</label><input id="wh_code"></div><div><label>Warehouse Name *</label><input id="wh_name"></div><div><label>Location</label><input id="wh_location"></div><div><label>Notes</label><input id="wh_notes"></div>
-</div><button class="primary" onclick="addWarehouse()">Save Warehouse</button></div>
-<div class="panel"><h2>Warehouse List</h2><div id="warehouseTable" class="tablewrap"></div></div>
-</section>
-
-<section id="suppliers" class="page">
-<h2 class="section">Suppliers</h2>
-<div class="panel"><h2>Add Supplier</h2><div class="grid">
-<div><label>Supplier Code</label><input id="sup_code"></div><div><label>Supplier Name *</label><input id="sup_name"></div><div><label>Contact Person</label><input id="sup_contact"></div><div><label>Phone</label><input id="sup_phone"></div><div><label>Email</label><input id="sup_email" type="email"></div><div><label>Address</label><input id="sup_address"></div>
-</div><button class="primary" onclick="addSupplier()">Save Supplier</button></div>
-<div class="panel"><h2>Supplier List</h2><div id="supplierTable" class="tablewrap"></div></div>
-</section>
-
-<section id="parts" class="page">
-<h2 class="section">Spare Parts</h2>
-<div class="panel"><h2>Add Spare Part</h2><div class="grid">
-<div><label>Part Code *</label><input id="part_code"></div><div><label>Part Name *</label><input id="part_name"></div><div><label>Category</label><input id="part_category"></div><div><label>Unit</label><select id="part_unit"><option>Piece</option><option>Liter</option><option>Set</option><option>Meter</option><option>Kg</option><option>Box</option></select></div><div><label>Supplier</label><select id="part_supplier"></select></div><div><label>Purchase Price</label><input id="part_price" type="number" min="0" step="0.01" value="0"></div><div><label>Minimum Stock Alert</label><input id="part_min" type="number" min="0" step="0.01" value="0"></div>
-</div><button class="primary" onclick="addPart()">Save Spare Part</button></div>
-<div class="panel"><h2>Spare Parts & Current Balances</h2><div id="partsTable" class="tablewrap"></div></div>
-</section>
-
-<section id="stock" class="page">
-<h2 class="section">Stock Movement</h2><div class="hint">Receipt adds stock. Issue deducts stock and can be linked to an equipment and work order. Return adds stock back. The database checks available quantity.</div>
-<div class="panel"><h2>Record Stock Movement</h2><div class="grid">
-<div><label>Movement Type *</label><select id="st_type"><option value="Receipt">Receipt (استلام)</option><option value="Issue">Issue (صرف)</option><option value="Return">Return (مرتجع)</option><option value="Adjustment">Adjustment (تسوية رصيد)</option></select></div>
-<div><label>Warehouse *</label><select id="st_wh"></select></div><div><label>Spare Part *</label><select id="st_part"></select></div><div><label>Quantity *</label><input id="st_qty" type="number" min="0.01" step="0.01"></div>
-<div><label>Unit Price</label><input id="st_price" type="number" min="0" step="0.01" value="0"></div><div><label>Supplier (for receipt)</label><select id="st_supplier"></select></div><div><label>Equipment (for issue)</label><select id="st_equipment"></select></div><div><label>Work Order</label><select id="st_work"></select></div>
-<div><label>Reference Number</label><input id="st_ref"></div><div><label>Notes</label><input id="st_notes"></div>
-</div><button class="primary" onclick="addStockMovement()">Save Movement</button></div>
-<div class="panel"><h2>Stock Movement History</h2><div id="stockTable" class="tablewrap"></div></div>
-</section>
-
-<section id="workorders" class="page">
-<h2 class="section">Work Orders</h2>
-<div class="panel"><h2>Create Work Order</h2><div class="grid">
-<div><label>Work Order Number *</label><input id="wo_number" placeholder="WO-0001"></div><div><label>Equipment *</label><select id="wo_equipment"></select></div><div><label>Title *</label><input id="wo_title"></div><div><label>Priority</label><select id="wo_priority"><option>Normal</option><option>Low</option><option>High</option><option>Urgent</option></select></div>
-<div><label>Status</label><select id="wo_status"><option>Open</option><option>In Progress</option><option>Waiting for Parts</option><option>Completed</option><option>Cancelled</option></select></div><div><label>Assigned To</label><input id="wo_assigned"></div><div><label>Labor Cost</label><input id="wo_labor" type="number" min="0" value="0"></div><div><label>Description</label><input id="wo_desc"></div><div><label>Notes</label><input id="wo_notes"></div>
-</div><button class="primary" onclick="addWorkOrder()">Save Work Order</button></div>
-<div class="panel"><h2>Work Order List</h2><div id="workTable" class="tablewrap"></div></div>
-</section>
-
-<section id="maintenance" class="page">
-<h2 class="section">Maintenance</h2>
-<div class="panel"><h2>Maintenance Types</h2><div class="grid"><div><label>Maintenance Name *</label><input id="mt_name"></div><div><label>Interval Hours *</label><input id="mt_interval" type="number" min="1"></div><div><label>Description</label><input id="mt_desc"></div></div><button class="primary" onclick="addMaintenanceType()">Save Maintenance Type</button><div id="typesTable" class="tablewrap" style="margin-top:14px"></div></div>
-<div class="panel"><h2>Record Maintenance</h2><div class="grid">
-<div><label>Equipment *</label><select id="mr_equipment"></select></div><div><label>Maintenance Type *</label><select id="mr_type"></select></div><div><label>Date *</label><input id="mr_date" type="date"></div><div><label>Operating Hours *</label><input id="mr_hours" type="number" min="0"></div><div><label>Description</label><input id="mr_desc"></div><div><label>Parts Replaced</label><input id="mr_parts"></div><div><label>Labor Cost</label><input id="mr_labor" type="number" min="0" value="0"></div><div><label>Spare Parts Cost</label><input id="mr_cost" type="number" min="0" value="0"></div><div><label>Next Due Hours</label><input id="mr_next" type="number" min="0"></div><div><label>Performed By</label><input id="mr_by"></div><div><label>Remarks</label><input id="mr_remarks"></div>
-</div><button class="primary" onclick="addMaintenanceRecord()">Save Maintenance Record</button></div>
-<div class="panel"><h2>Maintenance History</h2><div id="maintenanceTable" class="tablewrap"></div></div>
-</section>
-
-<section id="reports" class="page">
-<h2 class="section">Equipment Reports</h2><div class="panel"><label>Select Equipment</label><select id="report_equipment" onchange="loadEquipmentReport()"></select><div id="equipmentReport" style="margin-top:15px">Choose equipment to view its parts consumption and maintenance history.</div></div>
-</section>
+<div id="app" class="app hidden">
+<aside id="sidebar" class="sidebar">
+  <div class="brand"><div class="brand-mark">⚙</div><div>MAINTENA</div></div>
+  <div class="nav-label">Workspace</div>
+  <button class="nav-btn active" data-page="dashboard"><span class="ico">▦</span>Dashboard</button>
+  <button class="nav-btn" data-page="equipment"><span class="ico">🚜</span>Equipment</button>
+  <button class="nav-btn" data-page="maintenance"><span class="ico">🔧</span>Maintenance Records</button>
+  <button class="nav-btn" data-page="types"><span class="ico">🧰</span>Maintenance Types</button>
+  <button class="nav-btn" data-page="hours"><span class="ico">⏱</span>Operating Hours</button>
+  <div class="nav-label">Inventory</div>
+  <button class="nav-btn" data-page="parts"><span class="ico">📦</span>Spare Parts</button>
+  <button class="nav-btn" data-page="warehouses"><span class="ico">🏬</span>Warehouses</button>
+  <button class="nav-btn" data-page="suppliers"><span class="ico">🚚</span>Suppliers</button>
+  <button class="nav-btn" data-page="stock"><span class="ico">⇄</span>Stock Transactions</button>
+  <div class="nav-label">Operations</div>
+  <button class="nav-btn" data-page="workorders"><span class="ico">📋</span>Work Orders</button>
+  <button class="nav-btn" data-page="reports"><span class="ico">▤</span>Equipment Reports</button>
+  <div class="sidebar-bottom">Equipment & Maintenance Management<br>Connected to Supabase</div>
+</aside>
+<main class="main">
+  <header class="topbar"><div style="display:flex;align-items:center"><button class="mobile-menu" id="mobileMenu">☰</button><div class="top-title" id="topTitle">Dashboard</div></div><div class="userbox"><span id="userEmail">Signed in</span><div class="avatar">A</div><button class="btn secondary small" id="logoutBtn">Sign out</button></div></header>
+  <div class="content" id="content"></div>
 </main>
-
+</div>
+<div id="modalHost"></div>
 <script>
 const SUPABASE_URL = "https://arayncqksyddiygkbjzg.supabase.co";
-const SUPABASE_KEY = "sb_publishable_FueLZy87Cb5FPnC6I1tDjw_kI2gDPn8";
-const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
-let equipment=[], warehouses=[], suppliers=[], parts=[], workOrders=[], maintenanceTypes=[];
-
-function el(id){return document.getElementById(id)}
-function val(id){return el(id).value.trim()}
-function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
-function showMsg(message,ok=true){const m=el('globalMsg');m.textContent=message;m.className='msg '+(ok?'ok':'err');window.scrollTo({top:0,behavior:'smooth'});setTimeout(()=>m.className='msg',5000)}
-function loginMsg(message,ok=false){const m=el('loginMsg');m.textContent=message;m.className='msg '+(ok?'ok':'err')}
-async function login(){const {data,error}=await db.auth.signInWithPassword({email:val('email'),password:el('password').value});if(error){loginMsg(error.message);return}showApp()}
-async function logout(){await db.auth.signOut();el('app').style.display='none';el('login').style.display='block';el('logout').style.display='none'}
-async function showApp(){el('login').style.display='none';el('app').style.display='block';el('logout').style.display='inline-block';await refreshAll()}
-function showPage(id,btn){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));el(id).classList.add('active');document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));btn.classList.add('active')}
-function options(selectId,rows,labelFn,empty='Select'){el(selectId).innerHTML='<option value="">'+empty+'</option>'+rows.map(r=>`<option value="${r.id}">${escapeHtml(labelFn(r))}</option>`).join('')}
-function table(headers,rows){if(!rows.length)return '<p class="muted">No records found.</p>';return '<table><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+rows.join('')+'</tbody></table>'}
-async function getRows(tableName,columns='*',order='created_at',ascending=false){const q=db.from(tableName).select(columns);if(order)q.order(order,{ascending});const {data,error}=await q;if(error)throw error;return data||[]}
-async function refreshAll(){try{await Promise.all([loadEquipment(),loadWarehouses(),loadSuppliers(),loadParts(),loadWorkOrders(),loadMaintenanceTypes(),loadMaintenanceRecords(),loadStock(),loadDashboard()])}catch(e){showMsg(e.message,false)}}
-async function addEquipment(){try{if(!val('eq_code')||!val('eq_model'))throw Error('Equipment Code and Model are required');const {error}=await db.from('equipment').insert({equipment_code:val('eq_code'),equipment_model:val('eq_model'),serial_number:val('eq_serial')||null,project:val('eq_project')||null,current_location:val('eq_location')||null,current_operating_hours:Number(val('eq_hours')||0),last_maintenance_date:val('eq_last')||null,next_maintenance_due_hours:Number(val('eq_due'))||null,status:val('eq_status'),notes:val('eq_notes')||null});if(error)throw error;showMsg('Equipment saved successfully');['eq_code','eq_model','eq_serial','eq_project','eq_location','eq_last','eq_due','eq_notes'].forEach(x=>el(x).value='');await loadEquipment();await loadDashboard()}catch(e){showMsg(e.message,false)}}
-async function loadEquipment(){equipment=await getRows('equipment','*','equipment_code',true);el('equipmentTable').innerHTML=table(['Code','Model','Serial','Project','Location','Hours','Status'],equipment.map(x=>`<tr><td>${escapeHtml(x.equipment_code)}</td><td>${escapeHtml(x.equipment_model)}</td><td>${escapeHtml(x.serial_number)}</td><td>${escapeHtml(x.project)}</td><td>${escapeHtml(x.current_location)}</td><td>${x.current_operating_hours??0}</td><td>${escapeHtml(x.status)}</td></tr>`));['st_equipment','wo_equipment','mr_equipment','report_equipment'].forEach(id=>options(id,equipment,x=>`${x.equipment_code} - ${x.equipment_model}`,'Select Equipment'))}
-async function addWarehouse(){try{if(!val('wh_code')||!val('wh_name'))throw Error('Warehouse code and name are required');const {error}=await db.from('warehouses').insert({warehouse_code:val('wh_code'),warehouse_name:val('wh_name'),location:val('wh_location'),notes:val('wh_notes')});if(error)throw error;showMsg('Warehouse saved');await loadWarehouses()}catch(e){showMsg(e.message,false)}}
-async function loadWarehouses(){warehouses=await getRows('warehouses','*','warehouse_name',true);el('warehouseTable').innerHTML=table(['Code','Warehouse','Location'],warehouses.map(x=>`<tr><td>${escapeHtml(x.warehouse_code)}</td><td>${escapeHtml(x.warehouse_name)}</td><td>${escapeHtml(x.location)}</td></tr>`));options('st_wh',warehouses,x=>x.warehouse_name,'Select Warehouse')}
-async function addSupplier(){try{if(!val('sup_name'))throw Error('Supplier name is required');const {error}=await db.from('suppliers').insert({supplier_code:val('sup_code')||null,supplier_name:val('sup_name'),contact_person:val('sup_contact'),phone:val('sup_phone'),email:val('sup_email'),address:val('sup_address')});if(error)throw error;showMsg('Supplier saved');await loadSuppliers()}catch(e){showMsg(e.message,false)}}
-async function loadSuppliers(){suppliers=await getRows('suppliers','*','supplier_name',true);el('supplierTable').innerHTML=table(['Code','Supplier','Contact','Phone','Email','Address'],suppliers.map(x=>`<tr><td>${escapeHtml(x.supplier_code)}</td><td>${escapeHtml(x.supplier_name)}</td><td>${escapeHtml(x.contact_person)}</td><td>${escapeHtml(x.phone)}</td><td>${escapeHtml(x.email)}</td><td>${escapeHtml(x.address)}</td></tr>`));options('part_supplier',suppliers,x=>x.supplier_name);options('st_supplier',suppliers,x=>x.supplier_name)}
-async function addPart(){try{if(!val('part_code')||!val('part_name'))throw Error('Part code and name are required');const {error}=await db.from('spare_parts').insert({part_code:val('part_code'),part_name:val('part_name'),category:val('part_category'),unit:val('part_unit'),supplier_id:val('part_supplier')||null,purchase_price:Number(val('part_price')||0),minimum_stock:Number(val('part_min')||0)});if(error)throw error;showMsg('Spare part saved. Add an opening stock receipt from Stock Movement.');await loadParts();await loadDashboard()}catch(e){showMsg(e.message,false)}}
-async function loadParts(){const {data,error}=await db.from('spare_parts').select('*,suppliers(supplier_name)').order('part_name');if(error)throw error;parts=data||[];const {data:balances,error:be}=await db.from('stock_balances').select('*,warehouses(warehouse_name)');if(be)throw be;const totalByPart={};(balances||[]).forEach(b=>totalByPart[b.spare_part_id]=(totalByPart[b.spare_part_id]||0)+Number(b.quantity));el('partsTable').innerHTML=table(['Code','Part Name','Category','Unit','Supplier','Purchase Price','Min. Stock','Current Balance'],parts.map(p=>`<tr><td>${escapeHtml(p.part_code)}</td><td>${escapeHtml(p.part_name)}</td><td>${escapeHtml(p.category)}</td><td>${escapeHtml(p.unit)}</td><td>${escapeHtml(p.suppliers?.supplier_name)}</td><td>${Number(p.purchase_price||0).toFixed(2)}</td><td>${p.minimum_stock}</td><td>${totalByPart[p.id]||0}</td></tr>`));options('st_part',parts,p=>`${p.part_code} - ${p.part_name}`,'Select Spare Part')}
-async function addStockMovement(){try{const wh=val('st_wh'),part=val('st_part'),qty=Number(val('st_qty'));if(!wh||!part||!qty||qty<=0)throw Error('Warehouse, spare part and a quantity greater than zero are required');const type=val('st_type');if(type==='Adjustment'&& !confirm('Adjustment sets the stock balance to the entered quantity. Continue?'))return;const {error}=await db.from('stock_transactions').insert({warehouse_id:wh,spare_part_id:part,equipment_id:val('st_equipment')||null,work_order_id:val('st_work')||null,supplier_id:val('st_supplier')||null,transaction_type:type,quantity:qty,unit_price:Number(val('st_price')||0),reference_number:val('st_ref')||null,notes:val('st_notes')||null});if(error)throw error;showMsg('Stock movement saved and balance updated');el('st_qty').value='';el('st_ref').value='';el('st_notes').value='';await loadParts();await loadStock();await loadDashboard()}catch(e){showMsg(e.message,false)}}
-async function loadStock(){const {data,error}=await db.from('stock_transactions').select('*,warehouses(warehouse_name),spare_parts(part_code,part_name),equipment(equipment_code),work_orders(work_order_number)').order('transaction_date',{ascending:false}).limit(100);if(error)throw error;el('stockTable').innerHTML=table(['Date','Type','Warehouse','Part','Qty','Unit Price','Equipment','Work Order','Reference'],(data||[]).map(x=>`<tr><td>${new Date(x.transaction_date).toLocaleDateString()}</td><td>${escapeHtml(x.transaction_type)}</td><td>${escapeHtml(x.warehouses?.warehouse_name)}</td><td>${escapeHtml(x.spare_parts?.part_code+' - '+x.spare_parts?.part_name)}</td><td>${x.quantity}</td><td>${Number(x.unit_price||0).toFixed(2)}</td><td>${escapeHtml(x.equipment?.equipment_code)}</td><td>${escapeHtml(x.work_orders?.work_order_number)}</td><td>${escapeHtml(x.reference_number)}</td></tr>`))}
-async function addWorkOrder(){try{if(!val('wo_number')||!val('wo_equipment')||!val('wo_title'))throw Error('Work order number, equipment and title are required');const {error}=await db.from('work_orders').insert({work_order_number:val('wo_number'),equipment_id:val('wo_equipment'),title:val('wo_title'),priority:val('wo_priority'),status:val('wo_status'),assigned_to:val('wo_assigned'),labor_cost:Number(val('wo_labor')||0),description:val('wo_desc'),notes:val('wo_notes')});if(error)throw error;showMsg('Work order saved');await loadWorkOrders();await loadDashboard()}catch(e){showMsg(e.message,false)}}
-async function loadWorkOrders(){const {data,error}=await db.from('work_orders').select('*,equipment(equipment_code,equipment_model)').order('created_at',{ascending:false});if(error)throw error;workOrders=data||[];el('workTable').innerHTML=table(['WO Number','Equipment','Title','Priority','Status','Assigned To','Labor Cost','Opened'],workOrders.map(x=>`<tr><td>${escapeHtml(x.work_order_number)}</td><td>${escapeHtml(x.equipment?.equipment_code)}</td><td>${escapeHtml(x.title)}</td><td>${escapeHtml(x.priority)}</td><td>${escapeHtml(x.status)}</td><td>${escapeHtml(x.assigned_to)}</td><td>${Number(x.labor_cost||0).toFixed(2)}</td><td>${escapeHtml(x.opened_at)}</td></tr>`));options('st_work',workOrders,x=>`${x.work_order_number} - ${x.title}`,'Select Work Order')}
-async function addMaintenanceType(){try{if(!val('mt_name')||!val('mt_interval'))throw Error('Maintenance name and interval are required');const {error}=await db.from('maintenance_types').insert({maintenance_name:val('mt_name'),interval_hours:Number(val('mt_interval')),description:val('mt_desc')});if(error)throw error;showMsg('Maintenance type saved');await loadMaintenanceTypes()}catch(e){showMsg(e.message,false)}}
-async function loadMaintenanceTypes(){maintenanceTypes=await getRows('maintenance_types','*','maintenance_name',true);el('typesTable').innerHTML=table(['Maintenance Name','Interval Hours','Description'],maintenanceTypes.map(x=>`<tr><td>${escapeHtml(x.maintenance_name)}</td><td>${x.interval_hours}</td><td>${escapeHtml(x.description)}</td></tr>`));options('mr_type',maintenanceTypes,x=>x.maintenance_name,'Select Maintenance Type')}
-async function addMaintenanceRecord(){try{if(!val('mr_equipment')||!val('mr_type')||!val('mr_date')||val('mr_hours')==='')throw Error('Equipment, type, date and operating hours are required');const {error}=await db.from('maintenance_records').insert({equipment_id:val('mr_equipment'),maintenance_type_id:val('mr_type'),maintenance_date:val('mr_date'),operating_hours:Number(val('mr_hours')),maintenance_description:val('mr_desc'),parts_replaced:val('mr_parts'),labor_cost:Number(val('mr_labor')||0),spare_parts_cost:Number(val('mr_cost')||0),total_cost:Number(val('mr_labor')||0)+Number(val('mr_cost')||0),next_due_hours:Number(val('mr_next'))||null,performed_by:val('mr_by'),remarks:val('mr_remarks')});if(error)throw error;showMsg('Maintenance record saved');await loadMaintenanceRecords();await loadDashboard()}catch(e){showMsg(e.message,false)}}
-async function loadMaintenanceRecords(){const {data,error}=await db.from('maintenance_records').select('*,equipment(equipment_code),maintenance_types(maintenance_name)').order('maintenance_date',{ascending:false});if(error)throw error;el('maintenanceTable').innerHTML=table(['Date','Equipment','Type','Hours','Description','Total Cost','Next Due'],(data||[]).map(x=>`<tr><td>${escapeHtml(x.maintenance_date)}</td><td>${escapeHtml(x.equipment?.equipment_code)}</td><td>${escapeHtml(x.maintenance_types?.maintenance_name)}</td><td>${x.operating_hours}</td><td>${escapeHtml(x.maintenance_description)}</td><td>${Number(x.total_cost||0).toFixed(2)}</td><td>${x.next_due_hours??''}</td></tr>`))}
-async function loadAlerts(){const {data,error}=await db.from('low_stock_alerts').select('*').order('part_name');if(error)throw error;const rows=(data||[]).map(x=>`<tr><td>${escapeHtml(x.warehouse_name)}</td><td>${escapeHtml(x.part_code)}</td><td>${escapeHtml(x.part_name)}</td><td>${x.current_stock}</td><td>${x.minimum_stock}</td><td><span class="badge red">${escapeHtml(x.alert_status)}</span></td></tr>`);el('dashAlerts').innerHTML=table(['Warehouse','Code','Part','Balance','Minimum','Alert'],rows);el('dAlerts').textContent=(data||[]).length}
-async function loadDashboard(){const [e,p,w,m]=await Promise.all([db.from('equipment').select('id',{count:'exact',head:true}),db.from('spare_parts').select('id',{count:'exact',head:true}),db.from('work_orders').select('id',{count:'exact',head:true}).not('status','in','("Completed","Cancelled")'),db.from('maintenance_records').select('id',{count:'exact',head:true})]);[e,p,w,m].forEach(r=>{if(r.error)throw r.error});el('dEquipment').textContent=e.count||0;el('dParts').textContent=p.count||0;el('dWork').textContent=w.count||0;el('dMaint').textContent=m.count||0;await loadAlerts();const {data,error}=await db.from('stock_transactions').select('transaction_date,transaction_type,quantity,spare_parts(part_code,part_name),warehouses(warehouse_name)').order('transaction_date',{ascending:false}).limit(8);if(error)throw error;el('recentStock').innerHTML=table(['Date','Type','Warehouse','Part','Quantity'],(data||[]).map(x=>`<tr><td>${new Date(x.transaction_date).toLocaleDateString()}</td><td>${escapeHtml(x.transaction_type)}</td><td>${escapeHtml(x.warehouses?.warehouse_name)}</td><td>${escapeHtml(x.spare_parts?.part_code+' - '+x.spare_parts?.part_name)}</td><td>${x.quantity}</td></tr>`))}
-async function loadEquipmentReport(){const id=val('report_equipment');if(!id){el('equipmentReport').textContent='Choose equipment to view its report.';return}try{const [usage,maint,orders]=await Promise.all([db.from('equipment_parts_usage').select('*').eq('equipment_id',id),db.from('maintenance_records').select('*,maintenance_types(maintenance_name)').eq('equipment_id',id).order('maintenance_date',{ascending:false}),db.from('work_orders').select('*').eq('equipment_id',id).order('created_at',{ascending:false})]);[usage,maint,orders].forEach(r=>{if(r.error)throw r.error});el('equipmentReport').innerHTML='<h3>Spare Parts Used</h3>'+table(['Part Code','Part Name','Net Quantity','Net Cost'],(usage.data||[]).map(x=>`<tr><td>${escapeHtml(x.part_code)}</td><td>${escapeHtml(x.part_name)}</td><td>${x.net_quantity}</td><td>${Number(x.net_cost||0).toFixed(2)}</td></tr>`))+'<h3>Maintenance History</h3>'+table(['Date','Type','Hours','Description','Cost'],(maint.data||[]).map(x=>`<tr><td>${escapeHtml(x.maintenance_date)}</td><td>${escapeHtml(x.maintenance_types?.maintenance_name)}</td><td>${x.operating_hours}</td><td>${escapeHtml(x.maintenance_description)}</td><td>${Number(x.total_cost||0).toFixed(2)}</td></tr>`))+'<h3>Work Orders</h3>'+table(['Number','Title','Status','Priority','Labor Cost'],(orders.data||[]).map(x=>`<tr><td>${escapeHtml(x.work_order_number)}</td><td>${escapeHtml(x.title)}</td><td>${escapeHtml(x.status)}</td><td>${escapeHtml(x.priority)}</td><td>${Number(x.labor_cost||0).toFixed(2)}</td></tr>`))}catch(e){showMsg(e.message,false)}}
-el('mr_date').value=new Date().toISOString().slice(0,10);
-db.auth.getSession().then(({data})=>{if(data.session)showApp()});
+const SUPABASE_ANON_KEY = "sb_publishable_FueLZy87Cb5FPnC6I1tDjw_kI2gDPn8";
+const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const $ = id => document.getElementById(id);
+const esc = v => String(v ?? "").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const money = v => Number(v||0).toLocaleString("en-US",{minimumFractionDigits:2,maximumFractionDigits:2});
+const date = v => v ? new Date(v).toLocaleDateString("en-GB") : "—";
+const state = {page:"dashboard",equipment:[],types:[],maintenance:[],hours:[],parts:[],warehouses:[],suppliers:[],balances:[],stock:[],workorders:[]};
+const titles={dashboard:"Dashboard",equipment:"Equipment",maintenance:"Maintenance Records",types:"Maintenance Types",hours:"Operating Hours",parts:"Spare Parts",warehouses:"Warehouses",suppliers:"Suppliers",stock:"Stock Transactions",workorders:"Work Orders",reports:"Equipment Reports"};
+async function query(table,select="*"){const {data,error}=await db.from(table).select(select).order("created_at",{ascending:false});if(error)throw error;return data||[]}
+async function loadAll(){
+ const jobs=[["equipment","*"],["maintenance_types","*"],["maintenance_records","*,equipment(equipment_code,equipment_model),maintenance_types(maintenance_name)"],["operating_hour_logs","*,equipment(equipment_code,equipment_model)"],["spare_parts","*,suppliers(supplier_name)"],["warehouses","*"],["suppliers","*"],["stock_balances","*,warehouses(warehouse_name),spare_parts(part_code,part_name,minimum_stock)"],["stock_transactions","*,spare_parts(part_name,part_code),warehouses(warehouse_name),equipment(equipment_code)"],["work_orders","*,equipment(equipment_code,equipment_model)"]];
+ const keys=["equipment","types","maintenance","hours","parts","warehouses","suppliers","balances","stock","workorders"];
+ const results=await Promise.all(jobs.map(async ([t,s])=>{const {data,error}=await db.from(t).select(s).order("created_at",{ascending:false});if(error)throw new Error(t+": "+error.message);return data||[]}));
+ keys.forEach((k,i)=>state[k]=results[i]); render();
+}
+function pageHead(title,desc,action=""){return `<div class="page-head"><div><h1>${title}</h1><p>${desc}</p></div>${action}</div>`}
+function stat(label,value,icon,note=""){return `<div class="stat"><div class="stat-top">${label}<span class="stat-icon">${icon}</span></div><div class="stat-value">${value}</div><div class="stat-note">${note}</div></div>`}
+function badge(s){let x=String(s||"").toLowerCase(),c=["active","completed","available","closed","receipt","return"].includes(x)?"green":["out of service","overdue","cancelled","issue"].includes(x)?"red":["under maintenance","in progress","pending","adjustment"].includes(x)?"amber":"blue";return `<span class="badge ${c}">${esc(s||"—")}</span>`}
+function table(title,headers,rows,search=true){return `<section class="panel table-panel"><div class="table-head"><h3>${title}</h3><div class="table-tools">${search?'<input class="search" placeholder="Search..." oninput="filterTable(this)">':""}</div></div><div class="table-wrap"><table><thead><tr>${headers.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${rows.length?rows.join(""):`<tr><td colspan="${headers.length}" class="empty">No records found yet</td></tr>`}</tbody></table></div></section>`}
+function filterTable(input){const q=input.value.toLowerCase(),body=input.closest(".table-panel").querySelector("tbody");[...body.rows].forEach(r=>r.style.display=r.innerText.toLowerCase().includes(q)?"":"none")}
+function render(){
+ $("topTitle").textContent=titles[state.page]||"Dashboard";document.querySelectorAll(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.page===state.page));
+ const p=state.page;let html="";
+ if(p==="dashboard"){
+  const active=state.equipment.filter(x=>x.status==="Active").length, due=state.equipment.filter(x=>Number(x.current_operating_hours||0)>=Number(x.next_maintenance_due_hours||Infinity)).length;
+  const low=state.balances.filter(b=>b.spare_parts&&Number(b.quantity)<=Number(b.spare_parts.minimum_stock||0));
+  html=pageHead("Good day 👋","Here is an overview of your maintenance operations.")+
+  `<div class="stats">${stat("Total Equipment",state.equipment.length,"🚜","Registered assets")}${stat("Maintenance Records",state.maintenance.length,"🔧","All recorded activities")}${stat("Active Equipment",active,"✓","Currently operational")}${stat("Low Stock Items",low.length,"📦","At or below minimum level")}</div>
+  <div class="grid2"><div class="panel"><div class="panel-head"><h3>Equipment Status</h3><span>Current fleet overview</span></div><div class="chartbox"><canvas id="statusChart"></canvas></div></div><div class="panel"><div class="panel-head"><h3>Inventory Alerts</h3><span>${low.length} alerts</span></div><div class="alert-list">${low.length?low.slice(0,6).map(b=>`<div class="alert-item"><span><b>${esc(b.spare_parts?.part_name)}</b><br><span class="muted">${esc(b.warehouses?.warehouse_name||"Warehouse")}</span></span><b class="badge red">${b.quantity} left</b></div>`).join(""):'<div class="empty">No low-stock alerts</div>'}</div></div></div>
+  <div class="grid2"><div class="panel"><div class="panel-head"><h3>Maintenance Activity</h3><span>Recent records</span></div><div class="chartbox"><canvas id="maintChart"></canvas></div></div><div class="panel"><div class="panel-head"><h3>Quick Overview</h3><span>Operations snapshot</span></div><div class="alert-list"><div class="alert-item"><span>Warehouses</span><b>${state.warehouses.length}</b></div><div class="alert-item"><span>Spare Parts</span><b>${state.parts.length}</b></div><div class="alert-item"><span>Suppliers</span><b>${state.suppliers.length}</b></div><div class="alert-item"><span>Open Work Orders</span><b>${state.workorders.filter(w=>!["Completed","Closed"].includes(w.status)).length}</b></div></div></div></div>`;
+ }else if(p==="equipment"){
+  html=pageHead("Equipment","Register and monitor your generators, machines and vehicles.",'<button class="btn" onclick="openForm(\'equipment\')">+ Add Equipment</button>')+table("Equipment Register",["Code","Model","Serial Number","Project","Location","Operating Hours","Status"],state.equipment.map(x=>`<tr><td><b>${esc(x.equipment_code)}</b></td><td>${esc(x.equipment_model)}</td><td>${esc(x.serial_number)}</td><td>${esc(x.project)}</td><td>${esc(x.current_location)}</td><td>${Number(x.current_operating_hours||0).toLocaleString()}</td><td>${badge(x.status)}</td></tr>`));
+ }else if(p==="maintenance"){
+  html=pageHead("Maintenance Records","Track completed and planned maintenance activities.",'<button class="btn" onclick="openForm(\'maintenance\')">+ Add Record</button>')+table("Maintenance History",["Date","Equipment","Maintenance Type","Operating Hours","Description","Total Cost"],state.maintenance.map(x=>`<tr><td>${date(x.maintenance_date)}</td><td>${esc(x.equipment?.equipment_code||"—")}</td><td>${esc(x.maintenance_types?.maintenance_name||"—")}</td><td>${x.operating_hours??"—"}</td><td>${esc(x.maintenance_description)}</td><td>${money(x.total_cost)}</td></tr>`));
+ }else if(p==="types"){
+  html=pageHead("Maintenance Types","Configure service types and their maintenance intervals.",'<button class="btn" onclick="openForm(\'types\')">+ Add Type</button>')+table("Maintenance Types",["Name","Interval (Hours)","Description"],state.types.map(x=>`<tr><td><b>${esc(x.maintenance_name)}</b></td><td>${x.interval_hours??"—"}</td><td>${esc(x.description)}</td></tr>`));
+ }else if(p==="hours"){
+  html=pageHead("Operating Hours","Record equipment meter readings and daily usage.",'<button class="btn" onclick="openForm(\'hours\')">+ Add Reading</button>')+table("Operating Hour Log",["Date","Equipment","Hours","Project","Location","Diesel Consumption"],state.hours.map(x=>`<tr><td>${date(x.log_date)}</td><td>${esc(x.equipment?.equipment_code||"—")}</td><td>${x.operating_hours}</td><td>${esc(x.project)}</td><td>${esc(x.location)}</td><td>${x.diesel_consumption??"—"}</td></tr>`));
+ }else if(p==="parts"){
+  html=pageHead("Spare Parts","Manage spare part catalog, prices and minimum stock levels.",'<button class="btn" onclick="openForm(\'parts\')">+ Add Spare Part</button>')+table("Spare Parts Catalog",["Part Code","Part Name","Category","Unit","Supplier","Purchase Price","Minimum Stock"],state.parts.map(x=>`<tr><td><b>${esc(x.part_code)}</b></td><td>${esc(x.part_name)}</td><td>${esc(x.category)}</td><td>${esc(x.unit)}</td><td>${esc(x.suppliers?.supplier_name)}</td><td>${money(x.purchase_price)}</td><td>${x.minimum_stock??0}</td></tr>`));
+ }else if(p==="warehouses"){
+  html=pageHead("Warehouses","Manage storage locations and warehouse details.",'<button class="btn" onclick="openForm(\'warehouses\')">+ Add Warehouse</button>')+table("Warehouse List",["Code","Warehouse Name","Location","Notes"],state.warehouses.map(x=>`<tr><td><b>${esc(x.warehouse_code)}</b></td><td>${esc(x.warehouse_name)}</td><td>${esc(x.location)}</td><td>${esc(x.notes)}</td></tr>`));
+ }else if(p==="suppliers"){
+  html=pageHead("Suppliers","Maintain supplier contacts and purchasing information.",'<button class="btn" onclick="openForm(\'suppliers\')">+ Add Supplier</button>')+table("Supplier Directory",["Code","Supplier","Contact Person","Phone","Email","Address"],state.suppliers.map(x=>`<tr><td>${esc(x.supplier_code)}</td><td><b>${esc(x.supplier_name)}</b></td><td>${esc(x.contact_person)}</td><td>${esc(x.phone)}</td><td>${esc(x.email)}</td><td>${esc(x.address)}</td></tr>`));
+ }else if(p==="stock"){
+  html=pageHead("Stock Transactions","Record stock receipts, issues, returns and adjustments.",'<button class="btn" onclick="openForm(\'stock\')">+ New Transaction</button>')+table("Transaction History",["Date","Type","Part","Warehouse","Equipment","Quantity","Unit Price","Reference"],state.stock.map(x=>`<tr><td>${date(x.transaction_date)}</td><td>${badge(x.transaction_type)}</td><td>${esc(x.spare_parts?.part_name)}</td><td>${esc(x.warehouses?.warehouse_name)}</td><td>${esc(x.equipment?.equipment_code)}</td><td>${x.quantity}</td><td>${money(x.unit_price)}</td><td>${esc(x.reference_number)}</td></tr>`));
+ }else if(p==="workorders"){
+  html=pageHead("Work Orders","Plan, assign and follow up equipment repair jobs.",'<button class="btn" onclick="openForm(\'workorders\')">+ Create Work Order</button>')+table("Work Order Register",["Work Order","Equipment","Title","Priority","Status","Opened","Assigned To"],state.workorders.map(x=>`<tr><td><b>${esc(x.work_order_number)}</b></td><td>${esc(x.equipment?.equipment_code||"—")}</td><td>${esc(x.title)}</td><td>${badge(x.priority)}</td><td>${badge(x.status)}</td><td>${date(x.opened_at)}</td><td>${esc(x.assigned_to)}</td></tr>`));
+ }else if(p==="reports"){
+  html=pageHead("Equipment Reports","Review parts usage and maintenance cost by equipment.")+`<div class="panel"><div class="panel-head"><h3>Equipment Summary</h3><span>${state.equipment.length} assets</span></div>${state.equipment.map(e=>{const rec=state.maintenance.filter(m=>m.equipment_id===e.id);return `<div class="alert-item"><span><b>${esc(e.equipment_code)} — ${esc(e.equipment_model)}</b><br><span class="muted">${rec.length} maintenance records · ${e.current_operating_hours||0} operating hours</span></span><b>${money(rec.reduce((a,m)=>a+Number(m.total_cost||0),0))}</b></div>`}).join("")||'<div class="empty">No equipment registered</div>'}</div>`;
+ }
+ $("content").innerHTML=html;
+ if(p==="dashboard")drawCharts();
+}
+let charts=[];
+function drawCharts(){charts.forEach(c=>c.destroy());charts=[];const canvas=$("statusChart");if(!canvas)return;
+ const counts={};state.equipment.forEach(e=>counts[e.status||"Unknown"]=(counts[e.status||"Unknown"]||0)+1);
+ charts.push(new Chart(canvas,{type:"doughnut",data:{labels:Object.keys(counts),datasets:[{data:Object.values(counts),backgroundColor:["#2563eb","#16a477","#e3a12c","#e15b64","#8795a8"],borderWidth:0}]},options:{maintainAspectRatio:false,plugins:{legend:{position:"bottom",labels:{usePointStyle:true,boxWidth:8,font:{size:10}}}}}}));
+ const c2=$("maintChart");const months=Array.from({length:6},(_,i)=>{let d=new Date();d.setMonth(d.getMonth()-5+i);return d.toLocaleString("en",{month:"short",year:"2-digit"})});const values=months.map(label=>state.maintenance.filter(m=>{let d=new Date(m.maintenance_date);return d.toLocaleString("en",{month:"short",year:"2-digit"})===label}).length);
+ charts.push(new Chart(c2,{type:"bar",data:{labels:months,datasets:[{label:"Maintenance records",data:values,backgroundColor:"#4c83f2",borderRadius:6,maxBarThickness:28}]},options:{maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}},x:{grid:{display:false}}}}}));
+}
+function options(list,labelField,valueField){return list.map(x=>`<option value="${esc(x[valueField])}">${esc(x[labelField])}</option>`).join("")}
+function field(label,name,type="text",required=false,wide=false,extra=""){return `<div class="field ${wide?"wide":""}"><label>${label}${required?" *":""}</label>${type==="textarea"?`<textarea name="${name}" ${required?"required":""} ${extra}></textarea>`:`<input name="${name}" type="${type}" ${required?"required":""} ${extra}>`}</div>`}
+function selectField(label,name,opts,required=true,wide=false){return `<div class="field ${wide?"wide":""}"><label>${label}${required?" *":""}</label><select name="${name}" ${required?"required":""}><option value="">Select ${label}</option>${opts}</select></div>`}
+function openForm(kind){
+ let title="",body="";
+ if(kind==="equipment"){title="Add Equipment";body=field("Equipment Code","equipment_code","text",true)+field("Equipment Model","equipment_model","text",true)+field("Serial Number","serial_number")+field("Project","project")+field("Current Location","current_location")+field("Current Operating Hours","current_operating_hours","number",false,false,'min="0" step="0.1"')+field("Last Maintenance Date","last_maintenance_date","date")+field("Next Maintenance Due Hours","next_maintenance_due_hours","number",false,false,'min="0" step="0.1"')+selectField("Status","status",["Active","Under Maintenance","Out of Service"].map(v=>`<option>${v}</option>`).join(""))+field("Notes","notes","textarea",false,true)}
+ if(kind==="types"){title="Add Maintenance Type";body=field("Maintenance Name","maintenance_name","text",true)+field("Interval Hours","interval_hours","number")+field("Description","description","textarea",false,true)}
+ if(kind==="maintenance"){title="Add Maintenance Record";body=selectField("Equipment","equipment_id",options(state.equipment,"equipment_code","id"))+selectField("Maintenance Type","maintenance_type_id",options(state.types,"maintenance_name","id"))+field("Maintenance Date","maintenance_date","date",true)+field("Operating Hours","operating_hours","number")+field("Description","maintenance_description","text",false,true)+field("Parts Replaced","parts_replaced","textarea",false,true)+field("Labor Cost","labor_cost","number")+field("Spare Parts Cost","spare_parts_cost","number")+field("Next Due Hours","next_due_hours","number")+field("Performed By","performed_by")+field("Remarks","remarks","textarea",false,true)}
+ if(kind==="hours"){title="Add Operating Hours";body=selectField("Equipment","equipment_id",options(state.equipment,"equipment_code","id"))+field("Log Date","log_date","date",true)+field("Operating Hours","operating_hours","number",true)+field("Project","project")+field("Location","location")+field("Diesel Consumption","diesel_consumption","number")+field("Notes","notes","textarea",false,true)}
+ if(kind==="parts"){title="Add Spare Part";body=field("Part Code","part_code","text",true)+field("Part Name","part_name","text",true)+field("Category","category")+field("Unit","unit")+selectField("Supplier","supplier_id",`<option value="">No supplier</option>`+options(state.suppliers,"supplier_name","id"),false)+field("Purchase Price","purchase_price","number")+field("Selling Price","selling_price","number")+field("Minimum Stock","minimum_stock","number")}
+ if(kind==="warehouses"){title="Add Warehouse";body=field("Warehouse Code","warehouse_code","text",true)+field("Warehouse Name","warehouse_name","text",true)+field("Location","location")+field("Notes","notes","textarea",false,true)}
+ if(kind==="suppliers"){title="Add Supplier";body=field("Supplier Code","supplier_code")+field("Supplier Name","supplier_name","text",true)+field("Contact Person","contact_person")+field("Phone","phone")+field("Email","email","email")+field("Address","address")+field("Notes","notes","textarea",false,true)}
+ if(kind==="stock"){title="New Stock Transaction";body=selectField("Transaction Type","transaction_type",["Receipt","Issue","Return","Adjustment"].map(v=>`<option>${v}</option>`).join(""))+selectField("Warehouse","warehouse_id",options(state.warehouses,"warehouse_name","id"))+selectField("Spare Part","spare_part_id",options(state.parts,"part_name","id"))+field("Quantity","quantity","number",true,false,'min="0.01" step="0.01"')+field("Unit Price","unit_price","number")+selectField("Equipment (optional)","equipment_id",'<option value="">Not linked</option>'+options(state.equipment,"equipment_code","id"),false)+selectField("Work Order (optional)","work_order_id",'<option value="">Not linked</option>'+options(state.workorders,"work_order_number","id"),false)+selectField("Supplier (optional)","supplier_id",'<option value="">Not linked</option>'+options(state.suppliers,"supplier_name","id"),false)+field("Transaction Date","transaction_date","date",true)+field("Reference Number","reference_number")+field("Notes","notes","textarea",false,true)}
+ if(kind==="workorders"){title="Create Work Order";body=field("Work Order Number","work_order_number","text",true)+selectField("Equipment","equipment_id",options(state.equipment,"equipment_code","id"))+field("Title","title","text",true,false)+field("Description","description","textarea",false,true)+selectField("Priority","priority",["Low","Medium","High","Critical"].map(v=>`<option>${v}</option>`).join(""))+selectField("Status","status",["Open","In Progress","Completed","On Hold","Cancelled"].map(v=>`<option>${v}</option>`).join(""))+field("Assigned To","assigned_to")+field("Labor Cost","labor_cost","number")+field("Notes","notes","textarea",false,true)}
+ $("modalHost").innerHTML=`<div class="modal-backdrop" onclick="if(event.target===this)closeModal()"><div class="modal"><div class="modal-head"><h2>${title}</h2><button class="close" onclick="closeModal()">×</button></div><form id="dataForm" data-kind="${kind}"><div class="form-grid">${body}</div><div class="form-actions"><button type="button" class="btn secondary" onclick="closeModal()">Cancel</button><button class="btn" type="submit">Save Record</button></div><div id="formError" class="error"></div></form></div></div>`;
+ const dateInput=$("dataForm").querySelector('input[type="date"]');if(dateInput)dateInput.value=new Date().toISOString().slice(0,10);
+ $("dataForm").addEventListener("submit",saveForm);
+}
+function closeModal(){$("modalHost").innerHTML=""}
+async function saveForm(e){
+ e.preventDefault();const form=e.target,kind=form.dataset.kind,fd=new FormData(form),data=Object.fromEntries(fd.entries());
+ form.querySelector("button[type=submit]").disabled=true;
+ const map={equipment:"equipment",types:"maintenance_types",maintenance:"maintenance_records",hours:"operating_hour_logs",parts:"spare_parts",warehouses:"warehouses",suppliers:"suppliers",stock:"stock_transactions",workorders:"work_orders"};
+ const numeric={current_operating_hours:1,next_maintenance_due_hours:1,interval_hours:1,operating_hours:1,labor_cost:1,spare_parts_cost:1,next_due_hours:1,diesel_consumption:1,purchase_price:1,selling_price:1,minimum_stock:1,quantity:1,unit_price:1};
+ Object.keys(data).forEach(k=>{if(data[k]==="")data[k]=null;else if(numeric[k])data[k]=Number(data[k])});
+ if(kind==="maintenance")data.total_cost=Number(data.labor_cost||0)+Number(data.spare_parts_cost||0);
+ if(kind==="workorders")data.opened_at=new Date().toISOString();
+ if(kind==="stock"||kind==="hours"){} 
+ const {error}=await db.from(map[kind]).insert(data);
+ if(error){$("formError").textContent=error.message;form.querySelector("button[type=submit]").disabled=false;return}
+ closeModal();try{await loadAll()}catch(err){alert("Saved, but refresh failed: "+err.message)}
+}
+function showError(msg){$("content").innerHTML=`<div class="panel"><h3>Unable to load data</h3><p class="muted">${esc(msg)}</p><p class="muted">Please check your Supabase table permissions and connection. No data has been deleted.</p><button class="btn" onclick="loadAll().catch(e=>showError(e.message))">Try Again</button></div>`}
+async function enterApp(session){$("loginScreen").classList.add("hidden");$("app").classList.remove("hidden");$("userEmail").textContent=session.user.email||"Signed in";try{await loadAll()}catch(e){showError(e.message)}}
+$("loginForm").addEventListener("submit",async e=>{e.preventDefault();$("loginError").textContent="Signing in...";const {data,error}=await db.auth.signInWithPassword({email:$("email").value,password:$("password").value});if(error){$("loginError").textContent=error.message;return}await enterApp(data.session)});
+$("logoutBtn").addEventListener("click",async()=>{await db.auth.signOut();$("app").classList.add("hidden");$("loginScreen").classList.remove("hidden")});
+document.querySelectorAll(".nav-btn").forEach(b=>b.addEventListener("click",()=>{state.page=b.dataset.page;render();$("sidebar").classList.remove("open")}));
+$("mobileMenu").addEventListener("click",()=>$("sidebar").classList.toggle("open"));
+db.auth.getSession().then(({data})=>{if(data.session)enterApp(data.session)});
 </script>
-</body></html>
+</body>
+</html>
