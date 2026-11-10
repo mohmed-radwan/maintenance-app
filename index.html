@@ -228,7 +228,7 @@ const specs={
 equipment:{title:"Add Equipment",table:"equipment",fields:[["equipment_code","Equipment Code","text",true],["equipment_model","Equipment Model","text",true],["serial_number","Serial Number"],["project","Project"],["current_location","Current Location"],["current_operating_hours","Current Operating Hours","number"],["last_maintenance_date","Last Maintenance Date","date"],["next_maintenance_due_hours","Next Maintenance Due Hours","number"],["status","Status","select",false,["Active","Under Maintenance","Out of Service"]],["notes","Notes","textarea"]]},
 maintenance_types:{title:"Add Maintenance Type",table:"maintenance_types",fields:[["maintenance_name","Maintenance Name","text",true],["interval_hours","Interval (Hours)","number"],["description","Description","textarea"]]},
 maintenance_records:{title:"Add Maintenance Record",table:"maintenance_records",fields:[["equipment_id","Equipment","fk",true,"equipment"],["maintenance_type_id","Maintenance Type","fk",false,"maintenance_types"],["maintenance_date","Maintenance Date","date",true],["operating_hours","Operating Hours","number"],["maintenance_description","Description","textarea"],["parts_replaced","Parts Replaced","textarea"],["labor_cost","Labor Cost","number"],["spare_parts_cost","Spare Parts Cost","number"],["total_cost","Total Cost","number"],["next_due_hours","Next Due Hours","number"],["performed_by","Performed By"],["remarks","Remarks","textarea"]]},
-operating_hour_logs:{title:"Add Operating Hours",table:"operating_hour_logs",fields:[["equipment_id","Equipment","fk",true,"equipment"],["log_date","Log Date","date",true],["operating_hours","Operating Hours","number",true],["project","Project"],["location","Location"],["diesel_consumption","Diesel Consumption","number"],["recorded_by","Recorded By"],["notes","Notes","textarea"]]},
+operating_hour_logs:{title:"Update Equipment Meter",table:"operating_hour_logs",fields:[["equipment_id","Equipment","fk",true,"equipment"],["log_date","Log Date","date",true],["operating_hours","Operating Hours","number",true],["project","Project"],["location","Location"],["diesel_consumption","Diesel Consumption","number"],["recorded_by","Recorded By"],["notes","Notes","textarea"]]},
 spare_parts:{title:"Add Spare Part",table:"spare_parts",fields:[["part_code","Part Code","text",true],["part_name","Part Name","text",true],["category","Category"],["unit","Unit"],["supplier_id","Supplier","fk",false,"suppliers"],["purchase_price","Purchase Price","number"],["selling_price","Selling Price","number"],["minimum_stock","Minimum Stock","number"]]},
 warehouses:{title:"Add Warehouse",table:"warehouses",fields:[["warehouse_code","Warehouse Code","text",true],["warehouse_name","Warehouse Name","text",true],["location","Location"],["notes","Notes","textarea"]]},
 suppliers:{title:"Add Supplier",table:"suppliers",fields:[["supplier_code","Supplier Code"],["supplier_name","Supplier Name","text",true],["contact_person","Contact Person"],["phone","Phone"],["email","Email","email"],["address","Address"],["notes","Notes","textarea"]]},
@@ -245,6 +245,7 @@ const titles={dashboard:"Dashboard",equipment:"Equipment",maintenance:"Maintenan
 function toast(msg){const el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");setTimeout(()=>el.classList.remove("show"),3200)}
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function fmt(v){return v==null||v===""?"—":esc(v)}
+function currentMeter(equipmentId){const e=state.equipment.find(x=>String(x.id)===String(equipmentId));return e?e.current_operating_hours:null;}
 function dateFmt(v){if(!v)return"—";const d=new Date(v+"T00:00:00");return isNaN(d)?esc(v):d.toLocaleDateString()}
 function statusTag(v){const s=String(v||"").toLowerCase();let c=s.includes("active")||s.includes("completed")?"green":s.includes("out")||s.includes("critical")||s.includes("cancel")?"red":s.includes("progress")||s.includes("hold")||s.includes("under")?"orange":"";return `<span class="tag ${c}">${fmt(v||"Not set")}</span>`}
 function table(headers,rows,empty="No records found"){if(!rows.length)return `<div class="empty">${empty}</div>`;return `<table><thead><tr>${headers.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${rows.join("")}</tbody></table>`}
@@ -264,9 +265,14 @@ function renderEquipment(filter=""){
  `<button type="button" class="action-btn action-edit" data-equipment-edit="${esc(x.id)}">Edit</button><button type="button" class="action-btn action-delete" data-equipment-delete="${esc(x.id)}">Delete</button>`
  ])))
 }
-function renderMaintenance(){document.getElementById("maintenanceTable").innerHTML=table(["Date","Equipment","Maintenance Type","Operating Hours","Description","Total Cost","Performed By"],state.maintenance_records.map(x=>row([dateFmt(x.maintenance_date),fmt(x.equipment?.equipment_code||state.equipment.find(e=>e.id===x.equipment_id)?.equipment_code),fmt(x.maintenance_types?.maintenance_name||state.maintenance_types.find(t=>t.id===x.maintenance_type_id)?.maintenance_name),fmt(x.operating_hours),fmt(x.maintenance_description),fmt(x.total_cost),fmt(x.performed_by)])))}
+function renderMaintenance(){document.getElementById("maintenanceTable").innerHTML=table(["Date","Equipment","Maintenance Type","Operating Hours","Description","Total Cost","Performed By"],state.maintenance_records.map(x=>row([dateFmt(x.maintenance_date),fmt(x.equipment?.equipment_code||state.equipment.find(e=>e.id===x.equipment_id)?.equipment_code),fmt(x.maintenance_types?.maintenance_name||state.maintenance_types.find(t=>t.id===x.maintenance_type_id)?.maintenance_name),fmt(currentMeter(x.equipment_id)??x.operating_hours),fmt(x.maintenance_description),fmt(x.total_cost),fmt(x.performed_by)])))}
 function renderTypes(){document.getElementById("typesTable").innerHTML=table(["Maintenance Name","Interval (Hours)","Description"],state.maintenance_types.map(x=>row([`<strong>${fmt(x.maintenance_name)}</strong>`,fmt(x.interval_hours),fmt(x.description)])))}
-function renderHours(){document.getElementById("hoursTable").innerHTML=table(["Date","Equipment","Operating Hours","Project","Location","Diesel Consumption","Recorded By"],state.operating_hour_logs.map(x=>row([dateFmt(x.log_date),fmt(state.equipment.find(e=>e.id===x.equipment_id)?.equipment_code),fmt(x.operating_hours),fmt(x.project),fmt(x.location),fmt(x.diesel_consumption),fmt(x.recorded_by)])))}
+function renderHours(){
+ const latestByEquipment=new Map();
+ [...state.operating_hour_logs].sort((a,b)=>String(b.log_date||"").localeCompare(String(a.log_date||""))).forEach(x=>{const k=String(x.equipment_id);if(!latestByEquipment.has(k))latestByEquipment.set(k,x)});
+ const rows=[...latestByEquipment.values()].map(x=>row([dateFmt(x.log_date),fmt(state.equipment.find(e=>String(e.id)===String(x.equipment_id))?.equipment_code),fmt(currentMeter(x.equipment_id)??x.operating_hours),fmt(x.project),fmt(x.location),fmt(x.diesel_consumption),fmt(x.recorded_by)]));
+ document.getElementById("hoursTable").innerHTML=table(["Date","Equipment","Current Operating Hours","Project","Location","Diesel Consumption","Recorded By"],rows);
+}
 function renderParts(){document.getElementById("partsTable").innerHTML=table(["Part Code","Part Name","Category","Unit","Supplier","Purchase Price","Minimum Stock"],state.spare_parts.map(x=>row([`<strong>${fmt(x.part_code)}</strong>`,fmt(x.part_name),fmt(x.category),fmt(x.unit),fmt(x.suppliers?.supplier_name||state.suppliers.find(s=>s.id===x.supplier_id)?.supplier_name),fmt(x.purchase_price),fmt(x.minimum_stock)])))}
 function renderWarehouses(){document.getElementById("warehousesTable").innerHTML=table(["Code","Warehouse Name","Location","Notes"],state.warehouses.map(x=>row([fmt(x.warehouse_code),`<strong>${fmt(x.warehouse_name)}</strong>`,fmt(x.location),fmt(x.notes)])));document.getElementById("balancesTable").innerHTML=table(["Warehouse","Part Code","Part Name","Quantity","Minimum Stock"],state.stock_balances.map(x=>row([fmt(x.warehouses?.warehouse_name||state.warehouses.find(w=>w.id===x.warehouse_id)?.warehouse_name),fmt(x.spare_parts?.part_code||state.spare_parts.find(p=>p.id===x.spare_part_id)?.part_code),fmt(x.spare_parts?.part_name||state.spare_parts.find(p=>p.id===x.spare_part_id)?.part_name),`<strong>${fmt(x.quantity)}</strong>`,fmt(x.spare_parts?.minimum_stock||state.spare_parts.find(p=>p.id===x.spare_part_id)?.minimum_stock)])))}
 function renderSuppliers(){document.getElementById("suppliersTable").innerHTML=table(["Supplier Code","Supplier Name","Contact Person","Phone","Email","Address"],state.suppliers.map(x=>row([fmt(x.supplier_code),`<strong>${fmt(x.supplier_name)}</strong>`,fmt(x.contact_person),fmt(x.phone),fmt(x.email),fmt(x.address)])))}
@@ -335,7 +341,10 @@ document.getElementById("recordForm").addEventListener("submit",async e=>{
    if(!asset)throw new Error("Select a valid equipment item.");
    const previous=Number(asset.current_operating_hours||0),reading=Number(payload.operating_hours);
    if(reading<previous)throw new Error("Reading cannot be lower than the current equipment meter ("+previous+").");
-   result=await db.from("operating_hour_logs").insert(payload);
+   const {data:existingLog,error:findError}=await db.from("operating_hour_logs").select("id").eq("equipment_id",payload.equipment_id).order("log_date",{ascending:false}).limit(1).maybeSingle();
+   if(findError)throw findError;
+   if(existingLog)result=await db.from("operating_hour_logs").update(payload).eq("id",existingLog.id);
+   else result=await db.from("operating_hour_logs").insert(payload);
    if(!result.error){
     const upd=await db.from("equipment").update({current_operating_hours:reading}).eq("id",payload.equipment_id);
     if(upd.error)throw new Error("Reading saved, but equipment meter update failed: "+upd.error.message);
@@ -385,7 +394,7 @@ document.getElementById("exportEquipment").onclick=()=>exportCsv("APFC_Equipment
  ["equipment_code","equipment_model","serial_number","project","current_location","current_operating_hours","last_maintenance_date","next_maintenance_due_hours","status","notes"],state.equipment);
 document.getElementById("exportHours").onclick=()=>exportCsv("APFC_Operating_Hours.csv",
  ["equipment_code","log_date","operating_hours","project","location","diesel_consumption","recorded_by","notes"],
- state.operating_hour_logs.map(r=>({...r,equipment_code:state.equipment.find(e=>String(e.id)===String(r.equipment_id))?.equipment_code||""})));
+ [...new Map([...state.operating_hour_logs].sort((a,b)=>String(b.log_date||"").localeCompare(String(a.log_date||""))).map(r=>[String(r.equipment_id),r])).values()].map(r=>({...r,operating_hours:currentMeter(r.equipment_id)??r.operating_hours,equipment_code:state.equipment.find(e=>String(e.id)===String(r.equipment_id))?.equipment_code||""})));
 document.getElementById("exportParts").onclick=()=>exportCsv("APFC_Spare_Parts.csv",
  ["part_code","part_name","category","unit","supplier_code","purchase_price","selling_price","minimum_stock"],
  state.spare_parts.map(r=>({...r,supplier_code:state.suppliers.find(s=>String(s.id)===String(r.supplier_id))?.supplier_code||""})));
@@ -423,13 +432,19 @@ document.getElementById("csvImportFile").addEventListener("change",async e=>{
    }
    if(kind==="equipment"&&(!p.equipment_code||!p.equipment_model))throw new Error("Row "+(i+2)+": equipment code and model are required.");
    if(kind==="parts"&&(!p.part_code||!p.part_name))throw new Error("Row "+(i+2)+": part code and name are required.");
-   const {error}=await db.from(tableName).insert(p);if(error)throw new Error("Row "+(i+2)+": "+error.message);saved++;
    if(kind==="hours"){
     const asset=state.equipment.find(x=>String(x.id)===String(p.equipment_id));
+    const {data:existingLog,error:findError}=await db.from("operating_hour_logs").select("id").eq("equipment_id",asset.id).order("log_date",{ascending:false}).limit(1).maybeSingle();
+    if(findError)throw new Error("Row "+(i+2)+": "+findError.message);
+    const writeResult=existingLog?await db.from("operating_hour_logs").update(p).eq("id",existingLog.id):await db.from("operating_hour_logs").insert(p);
+    if(writeResult.error)throw new Error("Row "+(i+2)+": "+writeResult.error.message);
     const {error:uerr}=await db.from("equipment").update({current_operating_hours:Number(p.operating_hours)}).eq("id",asset.id);
-    if(uerr)throw new Error("Row "+(i+2)+": log saved but meter update failed: "+uerr.message);
+    if(uerr)throw new Error("Row "+(i+2)+": meter log updated but equipment meter update failed: "+uerr.message);
     asset.current_operating_hours=Number(p.operating_hours);
+   }else{
+    const {error}=await db.from(tableName).insert(p);if(error)throw new Error("Row "+(i+2)+": "+error.message);
    }
+   saved++;
   }
   await loadAll();toast("Imported "+saved+" records successfully.");
  }catch(err){console.error("CSV import:",err);alert("Import stopped: "+err.message+"\\nPreviously saved rows remain; no records were deleted.");await loadAll()}
