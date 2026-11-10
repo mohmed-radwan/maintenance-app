@@ -1,0 +1,254 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Maintenance Management System</title>
+
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background: #f1f5f9;
+    color: #1e293b;
+}
+
+.sidebar {
+    position: fixed;
+    width: 245px;
+    height: 100vh;
+    background: #14243a;
+    color: white;
+    padding: 25px 15px;
+}
+
+.logo {
+    font-size: 19px;
+    font-weight: bold;
+    margin-bottom: 40px;
+    padding-left: 10px;
+}
+
+.sidebar a {
+    display: block;
+    padding: 14px;
+    color: #cbd5e1;
+    text-decoration: none;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    cursor: pointer;
+}
+
+.sidebar a:hover,
+.sidebar a.active {
+    background: #2563eb;
+    color: white;
+}
+
+.main {
+    margin-left: 245px;
+    padding: 30px;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.header h1 {
+    font-size: 26px;
+}
+
+.header p {
+    color: #64748b;
+    margin-top: 7px;
+}
+
+.admin {
+    background: white;
+    padding: 12px 18px;
+    border-radius: 10px;
+}
+
+.cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin-bottom: 30px;
+}
+
+.card {
+    background: white;
+    padding: 22px;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px #00000008;
+}
+
+.card p {
+    color: #64748b;
+    font-size: 14px;
+}
+
+.card h2 {
+    font-size: 30px;
+    margin-top: 15px;
+}
+
+.blue { border-left: 4px solid #2563eb; }
+.green { border-left: 4px solid #16a34a; }
+.orange { border-left: 4px solid #f59e0b; }
+.red { border-left: 4px solid #dc2626; }
+
+.panel {
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    margin-bottom: 25px;
+}
+
+.panel h3 {
+    margin-bottom: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 15px;
+    text-align: left;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 14px;
+}
+
+th {
+    color: #64748b;
+    background: #f8fafc;
+}
+
+.status {
+    padding: 6px 10px;
+    border-radius: 20px;
+    background: #dcfce7;
+    color: #15803d;
+    font-size: 12px;
+}
+
+button {
+    background: #2563eb;
+    color: white;
+    border: none;
+    padding: 12px 18px;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #1d4ed8;
+}
+
+@media(max-width: 900px) {
+    .cards { grid-template-columns: repeat(2, 1fr); }
+    .sidebar { width: 180px; }
+    .main { margin-left: 180px; padding: 15px; }
+}
+
+@media(max-width: 600px) {
+    .sidebar { width: 65px; overflow: hidden; }
+    .logo { font-size: 12px; }
+    .sidebar a { font-size: 0; }
+    .main { margin-left: 65px; }
+    .cards { grid-template-columns: 1fr; }
+    .header { align-items: flex-start; gap: 15px; flex-direction: column; }
+    .panel { overflow-x: auto; }
+}
+</style>
+</head>
+
+<body>
+
+<div class="sidebar">
+    <div class="logo">⚙ MAINTENANCE</div>
+    <a class="active">▦ Dashboard</a>
+    <a>🚜 Equipment</a>
+    <a>🔧 Maintenance</a>
+    <a>◷ Operating Hours</a>
+    <a>📅 Maintenance Schedule</a>
+    <a>📊 Reports</a>
+    <a>⚙ Settings</a>
+</div>
+
+<div class="main">
+
+    <div class="header">
+        <div>
+            <h1>Dashboard</h1>
+            <p>Maintenance Management System</p>
+        </div>
+        <div class="admin">👤 Administrator</div>
+    </div>
+
+    <div class="cards">
+        <div class="card blue">
+            <p>Total Equipment</p>
+            <h2>0</h2>
+        </div>
+
+        <div class="card green">
+            <p>Operational</p>
+            <h2>0</h2>
+        </div>
+
+        <div class="card orange">
+            <p>Under Maintenance</p>
+            <h2>0</h2>
+        </div>
+
+        <div class="card red">
+            <p>Maintenance Due</p>
+            <h2>0</h2>
+        </div>
+    </div>
+
+    <div class="panel">
+        <h3>Equipment Overview</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Equipment Code</th>
+                    <th>Equipment Model</th>
+                    <th>Project</th>
+                    <th>Operating Hours</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td colspan="5">No equipment added yet</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="panel">
+        <h3>Maintenance Management</h3>
+        <p>Manage equipment, maintenance records, operating hours and maintenance schedules from one place.</p>
+        <br>
+        <button onclick="alert('Equipment module will be connected soon!')">
+            + Add Equipment
+        </button>
+    </div>
+
+</div>
+
+</body>
+</html>
