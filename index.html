@@ -78,7 +78,7 @@ async function loadAll(){
  const jobs=[["equipment","*"],["maintenance_types","*"],["maintenance_records","*,equipment(equipment_code,equipment_model),maintenance_types(maintenance_name)"],["operating_hour_logs","*,equipment(equipment_code,equipment_model)"],["spare_parts","*,suppliers(supplier_name)"],["warehouses","*"],["suppliers","*"],["stock_balances","*,warehouses(warehouse_name),spare_parts(part_code,part_name,minimum_stock)"],["stock_transactions","*,spare_parts(part_name,part_code),warehouses(warehouse_name),equipment(equipment_code)"],["work_orders","*,equipment(equipment_code,equipment_model)"]];
  const keys=["equipment","types","maintenance","hours","parts","warehouses","suppliers","balances","stock","workorders"];
  const results=await Promise.all(jobs.map(async ([t,s])=>{const {data,error}=await db.from(t).select(s).order("created_at",{ascending:false});if(error)throw new Error(t+": "+error.message);return data||[]}));
- keys.forEach((k,i)=>state[k]=results[i]); render();
+const results=await Promise.all(jobs.map(async ([t,s])=>{const query=db.from(t).select(s);const {data,error}=await (t==="stock_balances"?query.order("updated_at",{ascending:false}):query.order("created_at",{ascending:false}));if(error)throw new Error(t+": "+error.message);return data||[]}));
 }
 function pageHead(title,desc,action=""){return `<div class="page-head"><div><h1>${title}</h1><p>${desc}</p></div>${action}</div>`}
 function stat(label,value,icon,note=""){return `<div class="stat"><div class="stat-top">${label}<span class="stat-icon">${icon}</span></div><div class="stat-value">${value}</div><div class="stat-note">${note}</div></div>`}
