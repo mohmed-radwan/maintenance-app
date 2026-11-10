@@ -1,508 +1,330 @@
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Maintenance Management</title
+<title>Maintenance Management</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
 *{box-sizing:border-box}
 body{margin:0;font-family:Arial,sans-serif;background:#f4f6fa;color:#202b3c}
-header{background:#172b4d;color:white;padding:20px 28px;display:flex;justify-content:space-between;align-items:center}
+header{background:#172b4d;color:#fff;padding:18px 24px;display:flex;justify-content:space-between;align-items:center;gap:12px}
 header h2{margin:0;font-size:21px}
-button{border:0;border-radius:7px;padding:11px 17px;cursor:pointer;font-weight:bold}
-.primary{background:#1769aa;color:white}
-.secondary{background:#e7edf5;color:#25364d}
-.danger{background:#fde8e8;color:#a32626}
-main{max-width:1200px;margin:30px auto;padding:0 20px}
-.card{background:white;padding:22px;border-radius:12px;box-shadow:0 2px 12px #172b4d0c;margin-bottom:22px}
-h3{margin-top:0}
-input,select,textarea{width:100%;padding:12px;border:1px solid #d8deea;border-radius:7px;margin-top:7px;font-size:14px;background:white}
-label{font-size:13px;font-weight:bold;color:#526078}
-.form-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:17px;margin:18px 0}
-.actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-table{width:100%;border-collapse:collapse;min-width:850px}
-th,td{text-align:left;padding:13px;border-bottom:1px solid #edf0f5;font-size:13px}
-th{background:#f7f9fc;color:#526078}
-.table-wrap{overflow-x:auto}
-#message{margin:12px 0;color:#b32626}
-#app{display:none}
-#login{max-width:420px;margin:70px auto}
-.stat{font-size:27px;font-weight:bold;color:#1769aa}
+main{max-width:1250px;margin:25px auto;padding:0 18px}
+.card{background:#fff;padding:20px;border-radius:12px;box-shadow:0 2px 12px #172b4d0c;margin-bottom:20px}
+h3{margin:0 0 12px}
 .muted{color:#718096;font-size:13px}
-@media(max-width:700px){.form-grid{grid-template-columns:1fr}header{padding:17px}.card{padding:16px}}
+input,select,textarea{width:100%;padding:11px;border:1px solid #d8deea;border-radius:7px;margin-top:6px;font-size:14px;background:#fff}
+label{font-size:13px;font-weight:bold;color:#526078}
+.form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;margin:16px 0}
+button{border:0;border-radius:7px;padding:11px 16px;cursor:pointer;font-weight:bold}
+.primary{background:#1769aa;color:#fff}
+.secondary{background:#e7edf5;color:#25364d}
+.stat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
+.stat-box{background:#f7f9fc;border-radius:9px;padding:16px}
+.stat{font-size:28px;font-weight:bold;color:#1769aa;margin-top:6px}
+.table-wrap{overflow-x:auto;margin-top:14px}
+table{width:100%;border-collapse:collapse;min-width:700px}
+th,td{text-align:left;padding:11px;border-bottom:1px solid #edf0f5;font-size:13px}
+th{background:#f7f9fc;color:#526078}
+.message{margin-top:10px;font-size:13px;white-space:pre-wrap}
+.error{color:#b32626}.success{color:#16803c}
+#login{max-width:430px;margin:70px auto}
+#app{display:none}
+.section-title{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+@media(max-width:750px){.form-grid,.stat-grid{grid-template-columns:1fr}header{padding:16px}main{padding:0 12px}.card{padding:16px}}
 </style>
 </head>
 <body>
-
 <header>
-<h2>Maintenance Management</h2>
-<button id="logout" class="secondary" style="display:none" onclick="logout()">Sign Out</button>
+  <h2>Maintenance Management</h2>
+  <button id="logout" class="secondary" style="display:none" onclick="logout()">Sign Out</button>
 </header>
 
 <section id="login" class="card">
-<h3>Admin Login</h3>
-<p class="muted">Sign in to access your maintenance system.</p>
-<label>Email</label>
-<input id="email" type="email" placeholder="Your email">
-<label style="display:block;margin-top:15px">Password</label>
-<input id="password" type="password" placeholder="Your password">
-<button class="primary" style="width:100%;margin-top:18px" onclick="login()">Login</button
-   <button class="primary" style="width:100%;margin-top:10px;background:#16a34a" onclick="signup()">Create New Account</button>                                                                                 
-<div id="loginMessage"></div>
+  <h3>Admin Login</h3>
+  <p class="muted">Sign in to access your maintenance system.</p>
+  <label>Email</label>
+  <input id="email" type="email" placeholder="Your email" autocomplete="username">
+  <label style="display:block;margin-top:14px">Password</label>
+  <input id="password" type="password" placeholder="Your password" autocomplete="current-password">
+  <button class="primary" style="width:100%;margin-top:18px" onclick="login()">Login</button>
+  <div id="loginMessage" class="message"></div>
 </section>
 
 <div id="app">
 <main>
-  <div class="card">
-<h3>Maintenance Types</h3>
-<p class="muted">Manage preventive maintenance schedules.</p>
+  <section class="card">
+    <h3>Dashboard</h3>
+    <div class="stat-grid">
+      <div class="stat-box"><div class="muted">Total Equipment</div><div class="stat" id="totalEquipment">0</div></div>
+      <div class="stat-box"><div class="muted">Maintenance Types</div><div class="stat" id="totalTypes">0</div></div>
+      <div class="stat-box"><div class="muted">Maintenance Records</div><div class="stat" id="totalRecords">0</div></div>
+    </div>
+  </section>
 
-<div class="form-grid">
-  <div>
-    <label>Maintenance Name *</label>
-    <input id="maintenanceName" placeholder="e.g. Engine Oil Change">
-  </div>
+  <section class="card">
+    <h3>Equipment</h3>
+    <p class="muted">Register a generator, machine or vehicle.</p>
+    <div class="form-grid">
+      <div><label>Equipment Code *</label><input id="code" placeholder="e.g. GEN-001"></div>
+      <div><label>Equipment Model *</label><input id="model" placeholder="e.g. Caterpillar Generator"></div>
+      <div><label>Serial Number</label><input id="serial" placeholder="Serial number"></div>
+      <div><label>Project</label><input id="project" placeholder="Project name"></div>
+      <div><label>Current Location</label><input id="location" placeholder="Equipment location"></div>
+      <div><label>Current Operating Hours</label><input id="hours" type="number" min="0" step="0.1" value="0"></div>
+      <div><label>Last Maintenance Date</label><input id="lastDate" type="date"></div>
+      <div><label>Next Maintenance Due Hours</label><input id="nextDue" type="number" min="0" step="0.1" placeholder="e.g. 500"></div>
+      <div><label>Status</label><select id="status"><option>Active</option><option>Under Maintenance</option><option>Out of Service</option></select></div>
+      <div style="grid-column:1/-1"><label>Notes</label><textarea id="notes" rows="2" placeholder="Additional information"></textarea></div>
+    </div>
+    <button class="primary" onclick="addEquipment()">Save Equipment</button>
+    <button class="secondary" onclick="clearEquipmentForm()">Clear Form</button>
+    <div id="equipmentMessage" class="message"></div>
+    <div class="section-title" style="margin-top:22px">
+      <h3>Equipment List</h3>
+      <button class="secondary" onclick="loadEquipment()">Refresh</button>
+    </div>
+    <input id="searchEquipment" placeholder="Search by code, model, serial number or project..." oninput="renderEquipment()">
+    <div class="table-wrap"><table>
+      <thead><tr><th>Code</th><th>Model</th><th>Serial Number</th><th>Project</th><th>Location</th><th>Operating Hours</th><th>Status</th></tr></thead>
+      <tbody id="equipmentRows"><tr><td colspan="7">No equipment found.</td></tr></tbody>
+    </table></div>
+    <div id="equipmentListMessage" class="message muted"></div>
+  </section>
 
-  <div>
-    <label>Interval Hours *</label>
-    <input id="maintenanceInterval" type="number" min="1" placeholder="e.g. 250">
-  </div>
+  <section class="card">
+    <h3>Maintenance Types</h3>
+    <p class="muted">Set preventive maintenance intervals.</p>
+    <div class="form-grid">
+      <div><label>Maintenance Name *</label><input id="maintenanceName" placeholder="e.g. Engine Oil Change"></div>
+      <div><label>Interval Hours *</label><input id="maintenanceInterval" type="number" min="1" placeholder="e.g. 250"></div>
+      <div><label>Description</label><input id="maintenanceDescription" placeholder="Maintenance details"></div>
+    </div>
+    <button class="primary" onclick="addMaintenanceType()">Save Maintenance Type</button>
+    <div id="maintenanceMessage" class="message"></div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Maintenance Name</th><th>Interval Hours</th><th>Description</th></tr></thead>
+      <tbody id="maintenanceRows"><tr><td colspan="3">No maintenance types found.</td></tr></tbody>
+    </table></div>
+  </section>
 
-  <div>
-    <label>Description</label>
-    <input id="maintenanceDescription" placeholder="Maintenance details">
-  </div>
-</div>
-
-<button class="primary" onclick="addMaintenanceType()">Save Maintenance Type</button>
-
-<div id="maintenanceMessage"></div>
-
-<h3 style="margin-top:25px">Maintenance Types List</h3>
-<div class="table-wrap">
-<table>
-<thead>
-<tr>
-<th>Maintenance Name</th>
-<th>Interval Hours</th>
-<th>Description</th>
-</tr>
-</thead>
-<tbody id="maintenanceRows">
-<tr><td colspan="3">No maintenance types loaded.</td></tr>
-</tbody>
-</table>
-</div>
-</div>
-<div class="card"><div class="card">
-<h3>Maintenance Records</h3>
-<p class="muted">Record maintenance work for equipment.</p>
-
-<div class="form-grid">
-
-  <div>
-    <label>Equipment *</label>
-    <select id="recordEquipment">
-      <option value="">Select Equipment</option>
-    </select>
-  </div>
-
-  <div>
-    <label>Maintenance Type *</label>
-    <select id="recordType">
-      <option value="">Select Maintenance Type</option>
-    </select>
-  </div>
-
-  <div>
-    <label>Maintenance Date *</label>
-    <input type="date" id="recordDate">
-  </div>
-
-  <div>
-    <label>Operating Hours *</label>
-    <input type="number" id="recordHours" placeholder="Operating hours">
-  </div>
-
-  <div>
-    <label>Maintenance Description</label>
-    <input id="recordDescription" placeholder="Work performed">
-  </div>
-
-  <div>
-    <label>Parts Replaced</label>
-    <input id="recordParts" placeholder="Parts used">
-  </div>
-
-  <div>
-    <label>Labor Cost</label>
-    <input type="number" id="recordLabor" value="0">
-  </div>
-
-  <div>
-    <label>Spare Parts Cost</label>
-    <input type="number" id="recordPartsCost" value="0">
-  </div>
-
-  <div>
-    <label>Next Due Hours</label>
-    <input type="number" id="recordNextDue">
-  </div>
-
-</div>
-
-<button class="primary" onclick="addMaintenanceRecord()">Save Maintenance Record</button>
-
-<div id="recordMessage"></div>
-
-</div>
-<h3>Equipment Dashboard</h3>
-<p class="muted">Total registered equipment</p>
-<div class="stat" id="totalEquipment">0</div>
-</div>
-
-<div class="card">
-<h3>Add New Equipment</h3>
-<p class="muted">Register a generator, machine or vehicle.</p>
-
-<div class="form-grid">
-<div>
-<label>Equipment Code *</label>
-<input id="code" placeholder="e.g. GEN-001">
-</div>
-<div>
-<label>Equipment Model *</label>
-<input id="model" placeholder="e.g. Caterpillar  generator">
-</div>
-<div>
-<label>Serial Number</label>
-<input id="serial" placeholder="Serial number">
-</div>
-<div>
-<label>Project</label>
-<input id="project" placeholder="Project name">
-</div>
-<div>
-<label>Current Location</label>
-<input id="location" placeholder="Equipment location">
-</div>
-<div>
-<label>Current Operating Hours</label>
-<input id="hours" type="number" min="0" step="0.1" value="0">
-</div>
-<div>
-<label>Last Maintenance Date</label>
-<input id="lastDate" type="date">
-</div>
-<div>
-<label>Next Maintenance Due Hours</label>
-<input id="nextDue" type="number" min="0" step="0.1" placeholder="e.g. 500">
-</div>
-<div>
-<label>Status</label>
-<select id="status">
-<option>Active</option>
-<option>Under Maintenance</option>
-<option>Out of Service</option>
-</select>
-</div>
-<div style="grid-column:1/-1">
-<label>Notes</label>
-<textarea id="notes" rows="2" placeholder="Additional information"></textarea>
-</div>
-</div>
-
-<div class="actions">
-<button class="primary" onclick="addEquipment()">Save Equipment</button>
-<button class="secondary" onclick="clearForm()">Clear Form</button>
-</div>
-<div id="formMessage"></div>
-</div>
-
-<div class="card">
-<div class="actions" style="justify-content:space-between">
-<h3>Equipment List</h3>
-<button class="secondary" onclick="loadEquipment()">Refresh</button>
-</div>
-<input id="search" placeholder="Search by code, model, serial number or project..." oninput="renderEquipment()">
-<div class="table-wrap" style="margin-top:15px">
-<table>
-<thead>
-<tr>
-<th>Code</th>
-<th>Model</th>
-<th>Serial Number</th>
-<th>Project</th>
-<th>Location</th>
-<th>Operating Hours</th>
-<th>Status</th>
-</tr>
-</thead>
-<tbody id="equipmentRows">
-<tr><td colspan="7">No equipment loaded.</td></tr>
-</tbody>
-</table>
-</div>
-<div id="listMessage" class="muted"></div>
-</div>
+  <section class="card">
+    <h3>Maintenance Records</h3>
+    <p class="muted">Record completed maintenance work.</p>
+    <div class="form-grid">
+      <div><label>Equipment *</label><select id="recordEquipment"><option value="">Select Equipment</option></select></div>
+      <div><label>Maintenance Type *</label><select id="recordType"><option value="">Select Maintenance Type</option></select></div>
+      <div><label>Maintenance Date *</label><input type="date" id="recordDate"></div>
+      <div><label>Operating Hours *</label><input type="number" id="recordHours" min="0" step="0.1" placeholder="Operating hours"></div>
+      <div><label>Maintenance Description</label><input id="recordDescription" placeholder="Work performed"></div>
+      <div><label>Parts Replaced</label><input id="recordParts" placeholder="Parts used"></div>
+      <div><label>Labor Cost</label><input type="number" id="recordLabor" min="0" step="0.01" value="0"></div>
+      <div><label>Spare Parts Cost</label><input type="number" id="recordPartsCost" min="0" step="0.01" value="0"></div>
+      <div><label>Next Due Hours</label><input type="number" id="recordNextDue" min="0" step="0.1" placeholder="Next service hour meter"></div>
+      <div><label>Performed By</label><input id="recordPerformedBy" placeholder="Technician name"></div>
+      <div style="grid-column:1/-1"><label>Remarks</label><textarea id="recordRemarks" rows="2" placeholder="Additional remarks"></textarea></div>
+    </div>
+    <button class="primary" onclick="addMaintenanceRecord()">Save Maintenance Record</button>
+    <div id="recordMessage" class="message"></div>
+    <div class="section-title" style="margin-top:22px">
+      <h3>Maintenance History</h3>
+      <button class="secondary" onclick="loadMaintenanceRecords()">Refresh</button>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Date</th><th>Equipment</th><th>Maintenance Type</th><th>Hours</th><th>Description</th><th>Total Cost</th><th>Next Due</th></tr></thead>
+      <tbody id="recordRows"><tr><td colspan="7">No maintenance records found.</td></tr></tbody>
+    </table></div>
+  </section>
 </main>
 </div>
 
 <script>
 const SUPABASE_URL = "https://arayncqksyddiygkbjzg.supabase.co";
 const SUPABASE_KEY = "sb_publishable_FueLZy87Cb5FPnC6I1tDjw_kI2gDPn8";
-
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
 let equipmentList = [];
-
-async function signup(){
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value;
-
-  if(!email || !password){
-    alert("Enter email and password");
-    return;
-  }
-
-  const {data,error} = await db.auth.signUp({
-    email: email,
-    password: password
-  });
-
-  if(error){
-    alert("Error: " + error.message);
-    return;
-  }
-
-  alert("Account created successfully. Check your email if confirmation is required.");
-}async function loadRecordOptions(){
-  const {data: equipment, error: equipmentError} = await db
-    .from("equipment")
-    .select("id,equipment_code,equipment_model")
-    .order("equipment_code");
-
-  if(equipmentError){
-    document.getElementById("recordMessage").textContent =
-      "Error: " + equipmentError.message;
-    return;
-  }
-
-  document.getElementById("recordEquipment").innerHTML =
-    '<option value="">Select Equipment</option>' +
-    (equipment || []).map(item =>
-      `<option value="${item.id}">${safe(item.equipment_code)} - ${safe(item.equipment_model)}</option>`
-    ).join("");
-
-  const {data: types, error: typesError} = await db
-    .from("maintenance_types")
-    .select("id,maintenance_name")
-    .order("maintenance_name");
-
-  if(typesError){
-    document.getElementById("recordMessage").textContent =
-      "Error: " + typesError.message;
-    return;
-  }
-
-  document.getElementById("recordType").innerHTML =
-    '<option value="">Select Maintenance Type</option>' +
-    (types || []).map(item =>
-      `<option value="${item.id}">${safe(item.maintenance_name)}</option>`
-    ).join("");
-}
-
-async function addMaintenanceRecord(){
-  const equipmentId = document.getElementById("recordEquipment").value;
-  const typeId = document.getElementById("recordType").value;
-  const date = document.getElementById("recordDate").value;
-  const hours = document.getElementById("recordHours").value;
-  const message = document.getElementById("recordMessage");
-
-  if(!equipmentId || !typeId || !date || hours === ""){
-    message.textContent = "Please complete all required fields.";
-    return;
-  }
-
-  const labor = Number(document.getElementById("recordLabor").value || 0);
-  const partsCost = Number(document.getElementById("recordPartsCost").value || 0);
-
-  message.textContent = "Saving...";
-
-  const {error} = await db.from("maintenance_records").insert({
-    equipment_id: equipmentId,
-    maintenance_type_id: typeId,
-    maintenance_date: date,
-    operating_hours: Number(hours),
-    maintenance_description: document.getElementById("recordDescription").value.trim() || null,
-    parts_replaced: document.getElementById("recordParts").value.trim() || null,
-    labor_cost: labor,
-    spare_parts_cost: partsCost,
-    total_cost: labor + partsCost,
-    next_due_hours: document.getElementById("recordNextDue").value
-      ? Number(document.getElementById("recordNextDue").value)
-      : null
-  });
-
-  if(error){
-    message.textContent = "Error: " + error.message;
-    return;
-  }
-
-  message.style.color = "green";
-  message.textContent = "Maintenance record saved successfully.";
-
-  document.getElementById("recordDate").value = "";
-  document.getElementById("recordHours").value = "";
-  document.getElementById("recordDescription").value = "";
-  document.getElementById("recordParts").value = "";
-  document.getElementById("recordLabor").value = "0";
-  document.getElementById("recordPartsCost").value = "0";
-  document.getElementById("recordNextDue").value = "";
-}
-  async function login(){
-  
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value;
-  const message = document.getElementById("loginMessage");
-
-  message.textContent = "Signing in...";
-
-  const {error} = await db.auth.signInWithPassword({email,password});
-
-  if(error){
-    message.textContent = error.message;
-    return;
-  }
-
-  showApp();
-}
-
-async function logout(){
-  await db.auth.signOut();
-  document.getElementById("app").style.display = "none";
-  document.getElementById("login").style.display = "block";
-  document.getElementById("logout").style.display = "none";
-}
-
-function showApp(){
-  document.getElementById("login").style.display = "none";
-  document.getElementById("app").style.display = "block";
-  document.getElementById("logout").style.display = "block";
-  loadEquipment();
-  loadMaintenanceTypes();
-   loadRecordOptions();
-}
-
-async function loadEquipment(){
-  const message = document.getElementById("listMessage");
-  message.textContent = "Loading equipment...";
-
-  const {data,error} = await db
-    .from("equipment")
-    .select("*")
-    .order("created_at",{ascending:false});
-
-  if(error){
-    message.textContent = "Error: " + error.message;
-    return;
-  }
-
-  equipmentList = data || [];
-  document.getElementById("totalEquipment").textContent = equipmentList.length;
-  renderEquipment();
-  message.textContent = equipmentList.length + " equipment records found.";
-}
-
-function renderEquipment(){
-  const search = document.getElementById("search").value.toLowerCase();
-  const filtered = equipmentList.filter(item =>
-    [item.equipment_code,item.equipment_model,item.serial_number,item.project]
-      .some(value => String(value || "").toLowerCase().includes(search))
-  );
-
-  const rows = document.getElementById("equipmentRows");
-
-  if(filtered.length === 0){
-    rows.innerHTML = '<tr><td colspan="7">No matching equipment found.</td></tr>';
-    return;
-  }
-
-  rows.innerHTML = filtered.map(item => `
-    <tr>
-      <td>${safe(item.equipment_code)}</td>
-      <td>${safe(item.equipment_model)}</td>
-      <td>${safe(item.serial_number)}</td>
-      <td>${safe(item.project)}</td>
-      <td>${safe(item.current_location)}</td>
-      <td>${safe(item.current_operating_hours)}</td>
-      <td>${safe(item.status)}</td>
-    </tr>
-  `).join("");
-}
+let maintenanceTypes = [];
+let maintenanceRecords = [];
 
 function safe(value){
   return String(value ?? "").replace(/[&<>"']/g, char => ({
     "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
   })[char]);
 }
-
+function setMessage(id, text, kind="error"){
+  const el = document.getElementById(id);
+  el.textContent = text;
+  el.className = "message " + (kind === "success" ? "success" : kind === "muted" ? "muted" : "error");
+}
+async function login(){
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
+  if(!email || !password){ setMessage("loginMessage","Enter your email and password."); return; }
+  setMessage("loginMessage","Signing in...","muted");
+  const {error} = await db.auth.signInWithPassword({email,password});
+  if(error){ setMessage("loginMessage",error.message); return; }
+  await showApp();
+}
+async function logout(){
+  await db.auth.signOut();
+  document.getElementById("app").style.display = "none";
+  document.getElementById("login").style.display = "block";
+  document.getElementById("logout").style.display = "none";
+}
+async function showApp(){
+  document.getElementById("login").style.display = "none";
+  document.getElementById("app").style.display = "block";
+  document.getElementById("logout").style.display = "inline-block";
+  await Promise.all([loadEquipment(),loadMaintenanceTypes(),loadMaintenanceRecords()]);
+}
+async function loadEquipment(){
+  setMessage("equipmentListMessage","Loading equipment...","muted");
+  const {data,error} = await db.from("equipment").select("*").order("created_at",{ascending:false});
+  if(error){ setMessage("equipmentListMessage","Error loading equipment: "+error.message); return; }
+  equipmentList = data || [];
+  document.getElementById("totalEquipment").textContent = equipmentList.length;
+  renderEquipment();
+  populateRecordEquipment();
+  setMessage("equipmentListMessage",equipmentList.length+" equipment records found.","muted");
+}
+function renderEquipment(){
+  const search = (document.getElementById("searchEquipment")?.value || "").toLowerCase();
+  const filtered = equipmentList.filter(item =>
+    [item.equipment_code,item.equipment_model,item.serial_number,item.project]
+      .some(value => String(value || "").toLowerCase().includes(search))
+  );
+  document.getElementById("equipmentRows").innerHTML = filtered.length ? filtered.map(item => `
+    <tr><td>${safe(item.equipment_code)}</td><td>${safe(item.equipment_model)}</td>
+    <td>${safe(item.serial_number)}</td><td>${safe(item.project)}</td>
+    <td>${safe(item.current_location)}</td><td>${safe(item.current_operating_hours)}</td>
+    <td>${safe(item.status)}</td></tr>`).join("") : '<tr><td colspan="7">No matching equipment found.</td></tr>';
+}
 async function addEquipment(){
-  const message = document.getElementById("formMessage");
   const code = document.getElementById("code").value.trim();
   const model = document.getElementById("model").value.trim();
   const hours = document.getElementById("hours").value;
-
-  if(!code || !model){
-    message.textContent = "Equipment Code and Equipment Model are required.";
-    return;
-  }
-
-  if(hours !== "" && Number(hours) < 0){
-    message.textContent = "Operating hours cannot be negative.";
-    return;
-  }
-
+  if(!code || !model){ setMessage("equipmentMessage","Equipment Code and Equipment Model are required."); return; }
+  if(hours !== "" && Number(hours) < 0){ setMessage("equipmentMessage","Operating hours cannot be negative."); return; }
   const record = {
-    equipment_code: code,
-    equipment_model: model,
-    serial_number: document.getElementById("serial").value.trim() || null,
-    project: document.getElementById("project").value.trim() || null,
-    current_location: document.getElementById("location").value.trim() || null,
-    current_operating_hours: hours === "" ? 0 : Number(hours),
-    last_maintenance_date: document.getElementById("lastDate").value || null,
-    next_maintenance_due_hours: document.getElementById("nextDue").value === "" ? null : Number(document.getElementById("nextDue").value),
-    status: document.getElementById("status").value,
-    notes: document.getElementById("notes").value.trim() || null
+    equipment_code:code, equipment_model:model,
+    serial_number:document.getElementById("serial").value.trim() || null,
+    project:document.getElementById("project").value.trim() || null,
+    current_location:document.getElementById("location").value.trim() || null,
+    current_operating_hours:hours === "" ? 0 : Number(hours),
+    last_maintenance_date:document.getElementById("lastDate").value || null,
+    next_maintenance_due_hours:document.getElementById("nextDue").value === "" ? null : Number(document.getElementById("nextDue").value),
+    status:document.getElementById("status").value,
+    notes:document.getElementById("notes").value.trim() || null
   };
-
-  message.textContent = "Saving...";
-
+  setMessage("equipmentMessage","Saving...","muted");
   const {error} = await db.from("equipment").insert(record);
-
-  if(error){
-    message.textContent = "Error: " + error.message;
-    return;
-  }
-
-  message.style.color = "green";
-  message.textContent = "Equipment saved successfully.";
-  clearForm();
+  if(error){ setMessage("equipmentMessage","Error: "+error.message); return; }
+  setMessage("equipmentMessage","Equipment saved successfully.","success");
+  clearEquipmentForm();
   await loadEquipment();
 }
-
-function clearForm(){
-  ["code","model","serial","project","location","lastDate","nextDue","notes"]
-    .forEach(id => document.getElementById(id).value = "");
+function clearEquipmentForm(){
+  ["code","model","serial","project","location","lastDate","nextDue","notes"].forEach(id => document.getElementById(id).value = "");
   document.getElementById("hours").value = "0";
   document.getElementById("status").value = "Active";
 }
-
-db.auth.getSession().then(({data}) => {
+async function loadMaintenanceTypes(){
+  const {data,error} = await db.from("maintenance_types").select("*").order("maintenance_name");
+  if(error){ setMessage("maintenanceMessage","Error loading maintenance types: "+error.message); return; }
+  maintenanceTypes = data || [];
+  document.getElementById("totalTypes").textContent = maintenanceTypes.length;
+  document.getElementById("maintenanceRows").innerHTML = maintenanceTypes.length ? maintenanceTypes.map(item => `
+    <tr><td>${safe(item.maintenance_name)}</td><td>${safe(item.interval_hours)}</td><td>${safe(item.description)}</td></tr>`).join("") :
+    '<tr><td colspan="3">No maintenance types found. Add one using the form above.</td></tr>';
+  populateRecordTypes();
+}
+async function addMaintenanceType(){
+  const name = document.getElementById("maintenanceName").value.trim();
+  const interval = document.getElementById("maintenanceInterval").value;
+  const description = document.getElementById("maintenanceDescription").value.trim();
+  if(!name || !interval || Number(interval) <= 0){ setMessage("maintenanceMessage","Enter a maintenance name and a valid interval."); return; }
+  setMessage("maintenanceMessage","Saving...","muted");
+  const {error} = await db.from("maintenance_types").insert({
+    maintenance_name:name, interval_hours:Number(interval), description:description || null
+  });
+  if(error){ setMessage("maintenanceMessage","Error: "+error.message); return; }
+  document.getElementById("maintenanceName").value = "";
+  document.getElementById("maintenanceInterval").value = "";
+  document.getElementById("maintenanceDescription").value = "";
+  setMessage("maintenanceMessage","Maintenance type saved successfully.","success");
+  await loadMaintenanceTypes();
+}
+function populateRecordEquipment(){
+  const select = document.getElementById("recordEquipment");
+  const current = select.value;
+  select.innerHTML = '<option value="">Select Equipment</option>' + equipmentList.map(item =>
+    `<option value="${safe(item.id)}">${safe(item.equipment_code)} - ${safe(item.equipment_model)}</option>`
+  ).join("");
+  if(equipmentList.some(item => item.id === current)) select.value = current;
+}
+function populateRecordTypes(){
+  const select = document.getElementById("recordType");
+  const current = select.value;
+  select.innerHTML = '<option value="">Select Maintenance Type</option>' + maintenanceTypes.map(item =>
+    `<option value="${safe(item.id)}">${safe(item.maintenance_name)}</option>`
+  ).join("");
+  if(maintenanceTypes.some(item => item.id === current)) select.value = current;
+}
+async function addMaintenanceRecord(){
+  const equipmentId = document.getElementById("recordEquipment").value;
+  const typeId = document.getElementById("recordType").value;
+  const date = document.getElementById("recordDate").value;
+  const hours = document.getElementById("recordHours").value;
+  if(!equipmentId || !typeId || !date || hours === ""){ setMessage("recordMessage","Select equipment, maintenance type, date and operating hours."); return; }
+  if(Number(hours) < 0){ setMessage("recordMessage","Operating hours cannot be negative."); return; }
+  const labor = Number(document.getElementById("recordLabor").value || 0);
+  const partsCost = Number(document.getElementById("recordPartsCost").value || 0);
+  const payload = {
+    equipment_id:equipmentId, maintenance_type_id:typeId, maintenance_date:date,
+    operating_hours:Number(hours),
+    maintenance_description:document.getElementById("recordDescription").value.trim() || null,
+    parts_replaced:document.getElementById("recordParts").value.trim() || null,
+    labor_cost:labor, spare_parts_cost:partsCost, total_cost:labor+partsCost,
+    next_due_hours:document.getElementById("recordNextDue").value === "" ? null : Number(document.getElementById("recordNextDue").value),
+    performed_by:document.getElementById("recordPerformedBy").value.trim() || null,
+    remarks:document.getElementById("recordRemarks").value.trim() || null
+  };
+  setMessage("recordMessage","Saving...","muted");
+  const {error} = await db.from("maintenance_records").insert(payload);
+  if(error){ setMessage("recordMessage","Error: "+error.message); return; }
+  ["recordDate","recordHours","recordDescription","recordParts","recordNextDue","recordPerformedBy","recordRemarks"].forEach(id => document.getElementById(id).value = "");
+  document.getElementById("recordLabor").value = "0";
+  document.getElementById("recordPartsCost").value = "0";
+  setMessage("recordMessage","Maintenance record saved successfully.","success");
+  await loadMaintenanceRecords();
+}
+async function loadMaintenanceRecords(){
+  const {data,error} = await db.from("maintenance_records").select("*").order("maintenance_date",{ascending:false});
+  if(error){ setMessage("recordMessage","Error loading maintenance records: "+error.message); return; }
+  maintenanceRecords = data || [];
+  document.getElementById("totalRecords").textContent = maintenanceRecords.length;
+  renderMaintenanceRecords();
+}
+function renderMaintenanceRecords(){
+  const equipmentById = Object.fromEntries(equipmentList.map(item => [item.id,item]));
+  const typesById = Object.fromEntries(maintenanceTypes.map(item => [item.id,item]));
+  const rows = maintenanceRecords.map(item => {
+    const equipment = equipmentById[item.equipment_id];
+    const type = typesById[item.maintenance_type_id];
+    return `<tr><td>${safe(item.maintenance_date)}</td>
+      <td>${safe(equipment ? equipment.equipment_code : item.equipment_id)}</td>
+      <td>${safe(type ? type.maintenance_name : item.maintenance_type_id)}</td>
+      <td>${safe(item.operating_hours)}</td><td>${safe(item.maintenance_description)}</td>
+      <td>${safe(item.total_cost)}</td><td>${safe(item.next_due_hours)}</td></tr>`;
+  }).join("");
+  document.getElementById("recordRows").innerHTML = rows || '<tr><td colspan="7">No maintenance records found.</td></tr>';
+}
+db.auth.getSession().then(({data,error}) => {
+  if(error) return;
   if(data.session) showApp();
 });
-
 db.auth.onAuthStateChange((event,session) => {
   if(event === "SIGNED_OUT"){
     document.getElementById("app").style.display = "none";
