@@ -33,7 +33,7 @@
 .modal-actions{display:flex;justify-content:flex-end;gap:10px;padding:18px 26px 24px;margin:0;border-top:1px solid #edf1f7;background:#fff;position:sticky;bottom:0}
 .modal-actions .btn{min-width:112px;padding:11px 17px}
 .modal-actions .btn-primary{box-shadow:0 5px 12px rgba(56,103,232,.18)}
-.form-grid .full{grid-column:1/-1}.modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:15px}.row-actions{display:flex;gap:6px;white-space:nowrap}.btn-xs{border:0;border-radius:7px;padding:7px 9px;font-size:11px;font-weight:800}.btn-edit{background:#edf2ff;color:#315bd5}.btn-delete{background:#fff0f0;color:#c44752}.btn-xs:hover{filter:brightness(.96)}\n.toast{position:fixed;right:24px;bottom:24px;background:#14243d;color:#fff;padding:13px 17px;border-radius:10px;box-shadow:var(--shadow);z-index:40;font-size:12px;display:none}.toast.show{display:block}.loading{padding:28px;text-align:center;color:var(--muted);font-size:12px}.muted{color:var(--muted)}.mobile-menu{display:none}
+.form-grid .full{grid-column:1/-1}.modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:15px}.toast{position:fixed;right:24px;bottom:24px;background:#14243d;color:#fff;padding:13px 17px;border-radius:10px;box-shadow:var(--shadow);z-index:40;font-size:12px;display:none}.toast.show{display:block}.loading{padding:28px;text-align:center;color:var(--muted);font-size:12px}.muted{color:var(--muted)}.mobile-menu{display:none}
 @media(max-width:1050px){.sidebar{width:220px}.main{margin-left:220px;padding:23px}.stats{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:560px){.modal-back{padding:10px;align-items:flex-end}.modal{width:100%;max-height:92vh;border-radius:18px 18px 12px 12px}.modal-head{padding:18px 18px}.form-grid{grid-template-columns:1fr;gap:14px;padding:19px 18px 8px}.form-grid>div.full{grid-column:auto}.modal-actions{padding:15px 18px 18px}.modal-actions .btn{flex:1;min-width:0}}\n@media(max-width:720px){.login-wrap{grid-template-columns:1fr}.login-art{display:none}.sidebar{width:250px;transform:translateX(-100%);transition:.2s}.sidebar.open{transform:translateX(0)}.main{margin-left:0;padding:18px}.mobile-menu{display:inline-flex}.topbar{align-items:flex-start}.page-title{font-size:23px}.date-pill{display:none}.stats{grid-template-columns:1fr 1fr;gap:9px}.stat{padding:14px}.stat-value{font-size:24px}.grid-two{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.form-grid .full{grid-column:auto}.search{min-width:150px;width:100%}}
 </style>
@@ -214,8 +214,8 @@ const active=e.filter(x=>String(x.status||"").toLowerCase()==="active").length,u
 if(window.Chart){if(window.eqChart)window.eqChart.destroy();window.eqChart=new Chart(document.getElementById("equipmentChart"),{type:"doughnut",data:{labels:["Active","Under Maintenance","Out of Service","Other"],datasets:[{data:[active,under,out,Math.max(0,e.length-active-under-out)],backgroundColor:["#3867e8","#e99a35","#df5b65","#d9e1ee"],borderWidth:0,hoverOffset:5}]},options:{maintainAspectRatio:false,cutout:"70%",plugins:{legend:{position:"bottom",labels:{usePointStyle:true,boxWidth:7,padding:17,font:{size:10}}}}}})}
 document.getElementById("quickOverview").innerHTML=[["Active equipment",active,"#3867e8"],["Under maintenance",under,"#e99a35"],["Out of service",out,"#df5b65"],["Warehouses",state.warehouses.length,"#14a995"]].map(x=>`<div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;color:#718098"><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${x[2]};margin-right:9px"></i>${x[0]}</span><strong style="font:800 17px Manrope">${x[1]}</strong></div>`).join("");
 document.getElementById("recentEquipment").innerHTML=table(["Equipment Code","Model","Project","Location","Operating Hours","Status"],e.slice(0,6).map(x=>row([`<strong>${fmt(x.equipment_code)}</strong>`,fmt(x.equipment_model),fmt(x.project),fmt(x.current_location),fmt(x.current_operating_hours),statusTag(x.status)])))}
-function renderEquipment(filter=""){const list=state.equipment.filter(x=>[x.equipment_code,x.equipment_model,x.serial_number,x.project,x.current_location].join(" ").toLowerCase().includes(filter.toLowerCase()));window.apfcEquipmentVisible=list;document.getElementById("equipmentTable").innerHTML=table(["Equipment Code","Model","Serial Number","Project","Location","Operating Hours","Next Due","Status"],list.map(x=>row([`<strong>${fmt(x.equipment_code)}</strong>`,fmt(x.equipment_model),fmt(x.serial_number),fmt(x.project),fmt(x.current_location),fmt(x.current_operating_hours),fmt(x.next_maintenance_due_hours),statusTag(x.status)])))}
-function renderMaintenance(){window.apfcMaintenanceVisible=state.maintenance_records;document.getElementById("maintenanceTable").innerHTML=table(["Date","Equipment","Maintenance Type","Operating Hours","Description","Total Cost","Performed By"],state.maintenance_records.map(x=>row([dateFmt(x.maintenance_date),fmt(x.equipment?.equipment_code||state.equipment.find(e=>e.id===x.equipment_id)?.equipment_code),fmt(x.maintenance_types?.maintenance_name||state.maintenance_types.find(t=>t.id===x.maintenance_type_id)?.maintenance_name),fmt(x.operating_hours),fmt(x.maintenance_description),fmt(x.total_cost),fmt(x.performed_by)])))}
+function renderEquipment(filter=""){const list=state.equipment.filter(x=>[x.equipment_code,x.equipment_model,x.serial_number,x.project,x.current_location].join(" ").toLowerCase().includes(filter.toLowerCase()));document.getElementById("equipmentTable").innerHTML=table(["Equipment Code","Model","Serial Number","Project","Location","Operating Hours","Next Due","Status"],list.map(x=>row([`<strong>${fmt(x.equipment_code)}</strong>`,fmt(x.equipment_model),fmt(x.serial_number),fmt(x.project),fmt(x.current_location),fmt(x.current_operating_hours),fmt(x.next_maintenance_due_hours),statusTag(x.status)])))}
+function renderMaintenance(){document.getElementById("maintenanceTable").innerHTML=table(["Date","Equipment","Maintenance Type","Operating Hours","Description","Total Cost","Performed By"],state.maintenance_records.map(x=>row([dateFmt(x.maintenance_date),fmt(x.equipment?.equipment_code||state.equipment.find(e=>e.id===x.equipment_id)?.equipment_code),fmt(x.maintenance_types?.maintenance_name||state.maintenance_types.find(t=>t.id===x.maintenance_type_id)?.maintenance_name),fmt(x.operating_hours),fmt(x.maintenance_description),fmt(x.total_cost),fmt(x.performed_by)])))}
 function renderTypes(){document.getElementById("typesTable").innerHTML=table(["Maintenance Name","Interval (Hours)","Description"],state.maintenance_types.map(x=>row([`<strong>${fmt(x.maintenance_name)}</strong>`,fmt(x.interval_hours),fmt(x.description)])))}
 function renderHours(){document.getElementById("hoursTable").innerHTML=table(["Date","Equipment","Operating Hours","Project","Location","Diesel Consumption","Recorded By"],state.operating_hour_logs.map(x=>row([dateFmt(x.log_date),fmt(state.equipment.find(e=>e.id===x.equipment_id)?.equipment_code),fmt(x.operating_hours),fmt(x.project),fmt(x.location),fmt(x.diesel_consumption),fmt(x.recorded_by)])))}
 function renderParts(){document.getElementById("partsTable").innerHTML=table(["Part Code","Part Name","Category","Unit","Supplier","Purchase Price","Minimum Stock"],state.spare_parts.map(x=>row([`<strong>${fmt(x.part_code)}</strong>`,fmt(x.part_name),fmt(x.category),fmt(x.unit),fmt(x.suppliers?.supplier_name||state.suppliers.find(s=>s.id===x.supplier_id)?.supplier_name),fmt(x.purchase_price),fmt(x.minimum_stock)])))}
@@ -241,80 +241,13 @@ document.getElementById("recoveryForm").addEventListener("submit",async e=>{e.pr
 document.getElementById("logoutBtn").onclick=async()=>{await db.auth.signOut();location.reload()};
 db.auth.onAuthStateChange((event,session)=>{if(event==="PASSWORD_RECOVERY"||recoveryMode){showRecoveryScreen();return}if(session&&document.getElementById("app").classList.contains("hidden"))showApp(session)});
 document.getElementById("equipmentSearch").addEventListener("input",e=>renderEquipment(e.target.value));
-document.getElementById("maintenanceSearch").addEventListener("input",e=>{const q=e.target.value.toLowerCase();const filtered=state.maintenance_records.filter(x=>[x.maintenance_description,x.performed_by,x.remarks].join(" ").toLowerCase().includes(q));window.apfcMaintenanceVisible=filtered;document.getElementById("maintenanceTable").innerHTML=table(["Date","Equipment","Maintenance Type","Operating Hours","Description","Total Cost","Performed By"],filtered.map(x=>row([dateFmt(x.maintenance_date),fmt(state.equipment.find(e=>e.id===x.equipment_id)?.equipment_code),fmt(state.maintenance_types.find(t=>t.id===x.maintenance_type_id)?.maintenance_name),fmt(x.operating_hours),fmt(x.maintenance_description),fmt(x.total_cost),fmt(x.performed_by)])))});
+document.getElementById("maintenanceSearch").addEventListener("input",e=>{const q=e.target.value.toLowerCase();const filtered=state.maintenance_records.filter(x=>[x.maintenance_description,x.performed_by,x.remarks].join(" ").toLowerCase().includes(q));document.getElementById("maintenanceTable").innerHTML=table(["Date","Equipment","Maintenance Type","Operating Hours","Description","Total Cost","Performed By"],filtered.map(x=>row([dateFmt(x.maintenance_date),fmt(state.equipment.find(e=>e.id===x.equipment_id)?.equipment_code),fmt(state.maintenance_types.find(t=>t.id===x.maintenance_type_id)?.maintenance_name),fmt(x.operating_hours),fmt(x.maintenance_description),fmt(x.total_cost),fmt(x.performed_by)])))});
 let activeSpec=null;
-function openForm(key){activeSpec=specs[key];if(!activeSpec)return;document.getElementById("modalTitle").textContent=recordId?"Edit "+activeSpec.title.replace(/^Add |^New |^Create /,"") : activeSpec.title;editingRecordId=recordId;const wrap=document.getElementById("formFields");wrap.innerHTML="";activeSpec.fields.forEach(([name,label,type="text",required=false,extra])=>{const box=document.createElement("div");box.className=(type==="textarea"?"full":"");let control;if(type==="select"){control=document.createElement("select");control.innerHTML='<option value="">Select…</option>'+extra.map(v=>`<option>${esc(v)}</option>`).join("")}else if(type==="fk"){control=document.createElement("select");const opts=state[extra]||[];const labelKey=({equipment:"equipment_code",maintenance_types:"maintenance_name",suppliers:"supplier_name",warehouses:"warehouse_name",spare_parts:"part_name",work_orders:"work_order_number"})[extra];control.innerHTML='<option value="">Select…</option>'+opts.map(v=>`<option value="${esc(v.id)}">${esc(v[labelKey]||v.id)}</option>`).join("")}else if(type==="textarea"){control=document.createElement("textarea");control.rows=2}else{control=document.createElement("input");control.type=type}control.name=name;control.required=!!required;if(type==="date"&&name==="maintenance_date"||type==="date"&&name==="log_date"||type==="date"&&name==="opened_at"||type==="date"&&name==="transaction_date")control.value=new Date().toISOString().slice(0,10);const lab=document.createElement("label");lab.textContent=label+(required?" *":"");box.append(lab,control);wrap.append(box)});
-if(recordId){
- const record=(state[activeSpec.table]||[]).find(item=>String(item.id)===String(recordId));
- if(record){
-  activeSpec.fields.forEach(([name,label,type="text"])=>{
-   const control=wrap.querySelector(`[name="${name}"]`);
-   if(control && record[name]!==null && record[name]!==undefined) control.value=String(record[name]);
-  });
- }
-}
-document.getElementById("modalBack").classList.add("show")}
-function closeForm(){document.getElementById("modalBack").classList.remove("show");editingRecordId=null}
+function openForm(key){activeSpec=specs[key];if(!activeSpec)return;document.getElementById("modalTitle").textContent=activeSpec.title;const wrap=document.getElementById("formFields");wrap.innerHTML="";activeSpec.fields.forEach(([name,label,type="text",required=false,extra])=>{const box=document.createElement("div");box.className=(type==="textarea"?"full":"");let control;if(type==="select"){control=document.createElement("select");control.innerHTML='<option value="">Select…</option>'+extra.map(v=>`<option>${esc(v)}</option>`).join("")}else if(type==="fk"){control=document.createElement("select");const opts=state[extra]||[];const labelKey=({equipment:"equipment_code",maintenance_types:"maintenance_name",suppliers:"supplier_name",warehouses:"warehouse_name",spare_parts:"part_name",work_orders:"work_order_number"})[extra];control.innerHTML='<option value="">Select…</option>'+opts.map(v=>`<option value="${esc(v.id)}">${esc(v[labelKey]||v.id)}</option>`).join("")}else if(type==="textarea"){control=document.createElement("textarea");control.rows=2}else{control=document.createElement("input");control.type=type}control.name=name;control.required=!!required;if(type==="date"&&name==="maintenance_date"||type==="date"&&name==="log_date"||type==="date"&&name==="opened_at"||type==="date"&&name==="transaction_date")control.value=new Date().toISOString().slice(0,10);const lab=document.createElement("label");lab.textContent=label+(required?" *":"");box.append(lab,control);wrap.append(box)});document.getElementById("modalBack").classList.add("show")}
+function closeForm(){document.getElementById("modalBack").classList.remove("show")}
 document.getElementById("closeModal").onclick=closeForm;document.getElementById("cancelModal").onclick=closeForm;document.getElementById("quickAdd").onclick=()=>openForm("equipment");document.getElementById("refreshNotifications").onclick=async()=>{await loadOne("system_notifications");renderNotifications();toast("Notifications refreshed")};
 const buttons={addEquipment:"equipment",addMaintenance:"maintenance_records",addType:"maintenance_types",addHours:"operating_hour_logs",addPart:"spare_parts",addWarehouse:"warehouses",addSupplier:"suppliers",addTransaction:"stock_transactions",addWorkOrder:"work_orders",addInspection:"equipment_inspections",addMovement:"equipment_movements",addSchedule:"preventive_maintenance_schedules",addDocument:"equipment_documents",addPurchase:"purchase_orders"};Object.entries(buttons).forEach(([id,key])=>document.getElementById(id).onclick=()=>openForm(key));
-document.getElementById("recordForm").addEventListener("submit",async e=>{e.preventDefault();if(!activeSpec)return;const btn=e.target.querySelector('[type="submit"]');btn.disabled=true;btn.textContent="Saving…";const fd=new FormData(e.target);const payload={};for(const [k,v] of fd.entries()){if(v==="")continue;const field=activeSpec.fields.find(f=>f[0]===k);payload[k]=field&&(field[2]==="number")?Number(v):(k==="is_active"?v==="true":v)}const wasEditing=!!editingRecordId;const result=editingRecordId?await db.from(activeSpec.table).update(payload).eq("id",editingRecordId):await db.from(activeSpec.table).insert(payload);const {error}=result;btn.disabled=false;btn.textContent="Save record";if(error){toast("Could not save: "+error.message);return}closeForm();e.target.reset();toast(wasEditing?"Record updated successfully":"Record saved successfully");editingRecordId=null;await loadAll()});
-
-// APFC record management: add Edit/Delete actions to data tables.
-const apfcTableMap = {
- equipment:["equipment","equipmentTable"], maintenance_records:["maintenance_records","maintenanceTable"],
- maintenance_types:["maintenance_types","typesTable"], operating_hour_logs:["operating_hour_logs","hoursTable"],
- spare_parts:["spare_parts","partsTable"], warehouses:["warehouses","warehousesTable"],
- suppliers:["suppliers","suppliersTable"], stock_transactions:["stock_transactions","transactionsTable"],
- work_orders:["work_orders","workOrdersTable"], equipment_inspections:["equipment_inspections","inspectionsTable"],
- equipment_movements:["equipment_movements","movementsTable"],
- preventive_maintenance_schedules:["preventive_maintenance_schedules","schedulesTable"],
- equipment_documents:["equipment_documents","documentsTable"], purchase_orders:["purchase_orders","purchasesTable"]
-};
-const apfcOriginalRenderAll=renderAll;
-renderAll=function(){
- apfcOriginalRenderAll();
- Object.entries(apfcTableMap).forEach(([key,[tableName,elementId]])=>{
-  const host=document.getElementById(elementId);
-  if(!host)return;
-  const tableEl=host.querySelector("table");
-  if(!tableEl)return;
-  const head=tableEl.querySelector("thead tr");
-  if(head && !head.querySelector(".actions-heading")){
-   const th=document.createElement("th");th.textContent="Actions";th.className="actions-heading";head.appendChild(th);
-  }
-  const records=state[tableName]||[];
-  const rows=tableEl.querySelectorAll("tbody tr");
-  rows.forEach((tr,index)=>{
-   if(tr.querySelector("[data-apfc-action]"))return;
-   const record=records[index];
-   if(!record || record.id===undefined)return;
-   const td=document.createElement("td");
-   td.innerHTML=`<div class="row-actions"><button type="button" class="btn-xs btn-edit" data-apfc-action="edit" data-table="${tableName}" data-id="${esc(record.id)}">Edit</button><button type="button" class="btn-xs btn-delete" data-apfc-action="delete" data-table="${tableName}" data-id="${esc(record.id)}">Delete</button></div>`;
-   tr.appendChild(td);
-  });
- });
-};
-document.addEventListener("click",async event=>{
- const action=event.target.closest("[data-apfc-action]");
- if(!action)return;
- const tableName=action.dataset.table,id=action.dataset.id;
- const entry=Object.entries(apfcTableMap).find(([key,value])=>value[0]===tableName);
- if(!entry)return;
- const [key]=entry;
- if(action.dataset.apfcAction==="edit"){openForm(key,id);return}
- if(action.dataset.apfcAction==="delete"){
-  const record=(state[tableName]||[]).find(item=>String(item.id)===String(id));
-  const label=record?.equipment_code||record?.part_name||record?.supplier_name||record?.work_order_number||record?.order_number||"this record";
-  if(!confirm(`Delete ${label}? This cannot be undone.`))return;
-  action.disabled=true;
-  const {error}=await db.from(tableName).delete().eq("id",id);
-  action.disabled=false;
-  if(error){toast("Could not delete: "+error.message);return}
-  toast("Record deleted successfully");
-  await loadAll();
- }
-});
-
+document.getElementById("recordForm").addEventListener("submit",async e=>{e.preventDefault();if(!activeSpec)return;const btn=e.target.querySelector('[type="submit"]');btn.disabled=true;btn.textContent="Saving…";const fd=new FormData(e.target);const payload={};for(const [k,v] of fd.entries()){if(v==="")continue;const field=activeSpec.fields.find(f=>f[0]===k);payload[k]=field&&(field[2]==="number")?Number(v):(k==="is_active"?v==="true":v)}const {error}=await db.from(activeSpec.table).insert(payload);btn.disabled=false;btn.textContent="Save record";if(error){toast("Could not save: "+error.message);return}closeForm();e.target.reset();toast("Record saved successfully");await loadAll()});
 checkSession();
 </script>
 </body></html>
