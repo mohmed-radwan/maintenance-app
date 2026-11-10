@@ -109,6 +109,31 @@ tr:hover td{background:#fafcff}
 }
 </style>
 
+
+<style id="apfc-dark-theme">
+:root{--bg:#090d14;--panel:#111925;--ink:#e8eef8;--muted:#9aa9bd;--line:#263448;--nav:#080e18;--nav2:#121f31;--blue:#5684ff;--blue2:#1b2b49;--teal:#24c6a5;--orange:#f2ad4c;--red:#f0717c;--shadow:0 14px 38px rgba(0,0,0,.28)}
+body{background:radial-gradient(ellipse at 82% 0%,#14233b 0,transparent 35%),var(--bg);color:var(--ink)}
+.login-wrap,.login-side{background:#0b111b}.login-card h2{color:#edf3ff}.login-card>p{color:#9aa9bd}.login-card .brand{color:#edf3ff!important}
+.field label,.form-grid label{color:#bdcadd}
+.field input,.field select,.field textarea,.form-grid input,.form-grid select,.form-grid textarea{background:#111c2a;color:#e8eef8;border-color:#30415a}
+.field input:focus,.field select:focus,.field textarea:focus,.form-grid input:focus,.form-grid select:focus,.form-grid textarea:focus{background:#142235;border-color:#6688ef}
+.main{color:var(--ink)}.eyebrow,.section-head p,.stat-top,.stat-note,.panel-sub{color:var(--muted)}
+.page-title,.section-head h3,.panel h3,.stat-value{color:#edf3ff}
+.stat,.panel,.table-wrap{background:#111925;border-color:#263448;box-shadow:var(--shadow)}
+.stat:after{background:linear-gradient(135deg,#263b5b55,#17243b22)}.stat-icon{background:#1b2b49;color:#8eafff}
+.date-pill,.search{background:#111925;border-color:#2b3a50;color:#e8eef8}.btn-light{background:#1b293b;color:#d5dfed;border:1px solid #30425b}
+.btn-light:hover{background:#253750}th{background:#182437;color:#a8b8ce}td{color:#c2cee0;border-top-color:#263448}td strong{color:#f0f5ff}tr:hover td{background:#172335}
+.empty,.loading{color:#9aa9bd}.tag{background:#1c3154;color:#a8c1ff}.tag.green{background:#12372f;color:#6ce0c1}.tag.orange{background:#3b2b17;color:#ffc878}.tag.red{background:#3c2028;color:#ff9aa3}
+.notice{background:#172844;color:#b7caff}.error-banner{background:#3b2027;color:#ffb1b7;border-color:#63313a}
+.modal-back{background:rgba(0,0,0,.76)}.modal{background:#111925;border-color:#30415a;box-shadow:0 35px 100px rgba(0,0,0,.65)}
+.modal-head{background:linear-gradient(120deg,#18263a,#111925);border-bottom-color:#29394f}.modal-head h3{color:#f0f5ff}
+.modal-head button{background:#223149;color:#d8e3f4}.form-grid input,.form-grid select,.form-grid textarea{background:#0c1420}
+.modal-actions{background:#111925;border-top-color:#29394f}.toast{background:#263b5c;color:#fff}
+.action-btn{border:1px solid #344965;border-radius:8px;padding:6px 9px;font-size:11px;font-weight:700;margin-right:5px}
+.action-edit{background:#1b3153;color:#a9c5ff}.action-delete{background:#3b2028;color:#ffabb2;border-color:#63313a}
+@media(max-width:720px){.login-side{background:#0b111b}}
+</style>
+
 </head>
 <body>
 <div id="loginScreen" class="login-wrap">
@@ -214,7 +239,13 @@ const active=e.filter(x=>String(x.status||"").toLowerCase()==="active").length,u
 if(window.Chart){if(window.eqChart)window.eqChart.destroy();window.eqChart=new Chart(document.getElementById("equipmentChart"),{type:"doughnut",data:{labels:["Active","Under Maintenance","Out of Service","Other"],datasets:[{data:[active,under,out,Math.max(0,e.length-active-under-out)],backgroundColor:["#3867e8","#e99a35","#df5b65","#d9e1ee"],borderWidth:0,hoverOffset:5}]},options:{maintainAspectRatio:false,cutout:"70%",plugins:{legend:{position:"bottom",labels:{usePointStyle:true,boxWidth:7,padding:17,font:{size:10}}}}}})}
 document.getElementById("quickOverview").innerHTML=[["Active equipment",active,"#3867e8"],["Under maintenance",under,"#e99a35"],["Out of service",out,"#df5b65"],["Warehouses",state.warehouses.length,"#14a995"]].map(x=>`<div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;color:#718098"><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${x[2]};margin-right:9px"></i>${x[0]}</span><strong style="font:800 17px Manrope">${x[1]}</strong></div>`).join("");
 document.getElementById("recentEquipment").innerHTML=table(["Equipment Code","Model","Project","Location","Operating Hours","Status"],e.slice(0,6).map(x=>row([`<strong>${fmt(x.equipment_code)}</strong>`,fmt(x.equipment_model),fmt(x.project),fmt(x.current_location),fmt(x.current_operating_hours),statusTag(x.status)])))}
-function renderEquipment(filter=""){const list=state.equipment.filter(x=>[x.equipment_code,x.equipment_model,x.serial_number,x.project,x.current_location].join(" ").toLowerCase().includes(filter.toLowerCase()));document.getElementById("equipmentTable").innerHTML=table(["Equipment Code","Model","Serial Number","Project","Location","Operating Hours","Next Due","Status"],list.map(x=>row([`<strong>${fmt(x.equipment_code)}</strong>`,fmt(x.equipment_model),fmt(x.serial_number),fmt(x.project),fmt(x.current_location),fmt(x.current_operating_hours),fmt(x.next_maintenance_due_hours),statusTag(x.status)])))}
+function renderEquipment(filter=""){
+ const list=state.equipment.filter(x=>[x.equipment_code,x.equipment_model,x.serial_number,x.project,x.current_location].join(" ").toLowerCase().includes(filter.toLowerCase()));
+ document.getElementById("equipmentTable").innerHTML=table(["Equipment Code","Model","Serial Number","Project","Location","Operating Hours","Next Due","Status","Actions"],list.map(x=>row([
+ `<strong>${fmt(x.equipment_code)}</strong>`,fmt(x.equipment_model),fmt(x.serial_number),fmt(x.project),fmt(x.current_location),fmt(x.current_operating_hours),fmt(x.next_maintenance_due_hours),statusTag(x.status),
+ `<button type="button" class="action-btn action-edit" data-equipment-edit="${esc(x.id)}">Edit</button><button type="button" class="action-btn action-delete" data-equipment-delete="${esc(x.id)}">Delete</button>`
+ ])))
+}
 function renderMaintenance(){document.getElementById("maintenanceTable").innerHTML=table(["Date","Equipment","Maintenance Type","Operating Hours","Description","Total Cost","Performed By"],state.maintenance_records.map(x=>row([dateFmt(x.maintenance_date),fmt(x.equipment?.equipment_code||state.equipment.find(e=>e.id===x.equipment_id)?.equipment_code),fmt(x.maintenance_types?.maintenance_name||state.maintenance_types.find(t=>t.id===x.maintenance_type_id)?.maintenance_name),fmt(x.operating_hours),fmt(x.maintenance_description),fmt(x.total_cost),fmt(x.performed_by)])))}
 function renderTypes(){document.getElementById("typesTable").innerHTML=table(["Maintenance Name","Interval (Hours)","Description"],state.maintenance_types.map(x=>row([`<strong>${fmt(x.maintenance_name)}</strong>`,fmt(x.interval_hours),fmt(x.description)])))}
 function renderHours(){document.getElementById("hoursTable").innerHTML=table(["Date","Equipment","Operating Hours","Project","Location","Diesel Consumption","Recorded By"],state.operating_hour_logs.map(x=>row([dateFmt(x.log_date),fmt(state.equipment.find(e=>e.id===x.equipment_id)?.equipment_code),fmt(x.operating_hours),fmt(x.project),fmt(x.location),fmt(x.diesel_consumption),fmt(x.recorded_by)])))}
@@ -243,11 +274,63 @@ db.auth.onAuthStateChange((event,session)=>{if(event==="PASSWORD_RECOVERY"||reco
 document.getElementById("equipmentSearch").addEventListener("input",e=>renderEquipment(e.target.value));
 document.getElementById("maintenanceSearch").addEventListener("input",e=>{const q=e.target.value.toLowerCase();const filtered=state.maintenance_records.filter(x=>[x.maintenance_description,x.performed_by,x.remarks].join(" ").toLowerCase().includes(q));document.getElementById("maintenanceTable").innerHTML=table(["Date","Equipment","Maintenance Type","Operating Hours","Description","Total Cost","Performed By"],filtered.map(x=>row([dateFmt(x.maintenance_date),fmt(state.equipment.find(e=>e.id===x.equipment_id)?.equipment_code),fmt(state.maintenance_types.find(t=>t.id===x.maintenance_type_id)?.maintenance_name),fmt(x.operating_hours),fmt(x.maintenance_description),fmt(x.total_cost),fmt(x.performed_by)])))});
 let activeSpec=null;
-function openForm(key){activeSpec=specs[key];if(!activeSpec)return;document.getElementById("modalTitle").textContent=activeSpec.title;const wrap=document.getElementById("formFields");wrap.innerHTML="";activeSpec.fields.forEach(([name,label,type="text",required=false,extra])=>{const box=document.createElement("div");box.className=(type==="textarea"?"full":"");let control;if(type==="select"){control=document.createElement("select");control.innerHTML='<option value="">Select…</option>'+extra.map(v=>`<option>${esc(v)}</option>`).join("")}else if(type==="fk"){control=document.createElement("select");const opts=state[extra]||[];const labelKey=({equipment:"equipment_code",maintenance_types:"maintenance_name",suppliers:"supplier_name",warehouses:"warehouse_name",spare_parts:"part_name",work_orders:"work_order_number"})[extra];control.innerHTML='<option value="">Select…</option>'+opts.map(v=>`<option value="${esc(v.id)}">${esc(v[labelKey]||v.id)}</option>`).join("")}else if(type==="textarea"){control=document.createElement("textarea");control.rows=2}else{control=document.createElement("input");control.type=type}control.name=name;control.required=!!required;if(type==="date"&&name==="maintenance_date"||type==="date"&&name==="log_date"||type==="date"&&name==="opened_at"||type==="date"&&name==="transaction_date")control.value=new Date().toISOString().slice(0,10);const lab=document.createElement("label");lab.textContent=label+(required?" *":"");box.append(lab,control);wrap.append(box)});document.getElementById("modalBack").classList.add("show")}
-function closeForm(){document.getElementById("modalBack").classList.remove("show")}
+let editingEquipmentId=null;
+function openForm(key,record=null){
+ try{
+  activeSpec=specs[key];if(!activeSpec)throw new Error("Form configuration not found.");
+  editingEquipmentId=record&&key==="equipment"?record.id:null;
+  document.getElementById("modalTitle").textContent=record&&key==="equipment"?"Edit Equipment":activeSpec.title;
+  const wrap=document.getElementById("formFields");wrap.innerHTML="";
+  activeSpec.fields.forEach(([name,label,type="text",required=false,extra])=>{
+   const box=document.createElement("div");box.className=(type==="textarea"?"full":"");let control;
+   if(type==="select"){control=document.createElement("select");control.innerHTML='<option value="">Select…</option>'+extra.map(v=>`<option>${esc(v)}</option>`).join("")}
+   else if(type==="fk"){control=document.createElement("select");const opts=state[extra]||[];const labelKey=({equipment:"equipment_code",maintenance_types:"maintenance_name",suppliers:"supplier_name",warehouses:"warehouse_name",spare_parts:"part_name",work_orders:"work_order_number"})[extra];control.innerHTML='<option value="">Select…</option>'+opts.map(v=>`<option value="${esc(v.id)}">${esc(v[labelKey]||v.id)}</option>`).join("")}
+   else if(type==="textarea"){control=document.createElement("textarea");control.rows=2}
+   else{control=document.createElement("input");control.type=type}
+   control.name=name;control.required=!!required;
+   if(record&&record[name]!==null&&record[name]!==undefined)control.value=type==="date"?String(record[name]).slice(0,10):String(record[name]);
+   else if(type==="date"&&["maintenance_date","log_date","opened_at","transaction_date"].includes(name))control.value=new Date().toISOString().slice(0,10);
+   const lab=document.createElement("label");lab.textContent=label+(required?" *":"");box.append(lab,control);wrap.append(box);
+  });
+  document.getElementById("modalBack").classList.add("show");
+ }catch(err){console.error("APFC openForm error:",err);toast("Could not open form: "+err.message)}
+}
+function closeForm(){document.getElementById("modalBack").classList.remove("show");editingEquipmentId=null}
+document.querySelector("#modalBack .modal").addEventListener("click",e=>e.stopPropagation());
+document.getElementById("modalBack").addEventListener("click",e=>{if(e.target.id==="modalBack")closeForm()});
 document.getElementById("closeModal").onclick=closeForm;document.getElementById("cancelModal").onclick=closeForm;document.getElementById("quickAdd").onclick=()=>openForm("equipment");document.getElementById("refreshNotifications").onclick=async()=>{await loadOne("system_notifications");renderNotifications();toast("Notifications refreshed")};
 const buttons={addEquipment:"equipment",addMaintenance:"maintenance_records",addType:"maintenance_types",addHours:"operating_hour_logs",addPart:"spare_parts",addWarehouse:"warehouses",addSupplier:"suppliers",addTransaction:"stock_transactions",addWorkOrder:"work_orders",addInspection:"equipment_inspections",addMovement:"equipment_movements",addSchedule:"preventive_maintenance_schedules",addDocument:"equipment_documents",addPurchase:"purchase_orders"};Object.entries(buttons).forEach(([id,key])=>document.getElementById(id).onclick=()=>openForm(key));
-document.getElementById("recordForm").addEventListener("submit",async e=>{e.preventDefault();if(!activeSpec)return;const btn=e.target.querySelector('[type="submit"]');btn.disabled=true;btn.textContent="Saving…";const fd=new FormData(e.target);const payload={};for(const [k,v] of fd.entries()){if(v==="")continue;const field=activeSpec.fields.find(f=>f[0]===k);payload[k]=field&&(field[2]==="number")?Number(v):(k==="is_active"?v==="true":v)}const {error}=await db.from(activeSpec.table).insert(payload);btn.disabled=false;btn.textContent="Save record";if(error){toast("Could not save: "+error.message);return}closeForm();e.target.reset();toast("Record saved successfully");await loadAll()});
+document.getElementById("recordForm").addEventListener("submit",async e=>{
+ e.preventDefault();if(!activeSpec)return;
+ const btn=e.target.querySelector('[type="submit"]');btn.disabled=true;btn.textContent="Saving…";
+ try{
+  const fd=new FormData(e.target);const payload={};
+  for(const [k,v] of fd.entries()){
+   if(v==="")continue;
+   const field=activeSpec.fields.find(f=>f[0]===k);
+   payload[k]=field&&field[2]==="number"?(v.trim()===""?null:Number(v)):(k==="is_active"?v==="true":v);
+  }
+  let result;
+  if(activeSpec.table==="equipment"&&editingEquipmentId)result=await db.from("equipment").update(payload).eq("id",editingEquipmentId);
+  else result=await db.from(activeSpec.table).insert(payload);
+  if(result.error)throw result.error;
+  const wasEdit=!!editingEquipmentId;closeForm();e.target.reset();
+  toast(wasEdit?"Equipment updated successfully":"Record saved successfully");await loadAll();
+ }catch(err){console.error("APFC save error:",err);toast("Could not save: "+(err.message||"Unknown error"))}
+ finally{btn.disabled=false;btn.textContent="Save record"}
+});
+document.getElementById("equipmentTable").addEventListener("click",async e=>{
+ const edit=e.target.closest("[data-equipment-edit]"),del=e.target.closest("[data-equipment-delete]");
+ if(edit){const rec=state.equipment.find(x=>String(x.id)===edit.dataset.equipmentEdit);if(rec)openForm("equipment",rec)}
+ if(del){
+  const id=del.dataset.equipmentDelete,rec=state.equipment.find(x=>String(x.id)===id);if(!rec)return;
+  if(!confirm("Delete equipment "+(rec.equipment_code||"")+"? This cannot be undone."))return;
+  del.disabled=true;
+  try{const {error}=await db.from("equipment").delete().eq("id",id);if(error)throw error;toast("Equipment deleted successfully");await loadAll()}
+  catch(err){console.error("APFC delete error:",err);toast("Could not delete: "+(err.message||"Unknown error"))}
+  finally{del.disabled=false}
+ }
+});
 checkSession();
 </script>
 </body></html>
