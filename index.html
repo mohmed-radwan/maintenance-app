@@ -48,7 +48,8 @@ th{background:#f7f9fc;color:#526078}
 <input id="email" type="email" placeholder="Your email">
 <label style="display:block;margin-top:15px">Password</label>
 <input id="password" type="password" placeholder="Your password">
-<button class="primary" style="width:100%;margin-top:18px" onclick="login()">Login</button>
+<button class="primary" style="width:100%;margin-top:18px" onclick="login()">Login</button
+   <button class="primary" style="width:100%;margin-top:10px;background:#16a34a" onclick="signup()">Create New Account</button>                                                                                 
 <div id="loginMessage"></div>
 </section>
 
@@ -195,7 +196,27 @@ const SUPABASE_KEY = "sb_publishable_FueLZy87Cb5FPnC6I1tDjw_kI2gDPn8";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let equipmentList = [];
 
+async function signup(){
+  const email = document.getElementById("email").value.trim();
+  const password = document.getElementById("password").value;
 
+  if(!email || !password){
+    alert("Enter email and password");
+    return;
+  }
+
+  const {data,error} = await db.auth.signUp({
+    email: email,
+    password: password
+  });
+
+  if(error){
+    alert("Error: " + error.message);
+    return;
+  }
+
+  alert("Account created successfully. Check your email if confirmation is required.");
+}
   async function login(){
   
   const email = document.getElementById("email").value.trim();
