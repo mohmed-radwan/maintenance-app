@@ -134,6 +134,24 @@ body{background:radial-gradient(ellipse at 82% 0%,#14233b 0,transparent 35%),var
 @media(max-width:720px){.login-side{background:#0b111b}}
 </style>
 
+
+<style id="apfc-dark-final">
+:root{color-scheme:dark;--bg:#080d15;--panel:#111a27;--ink:#edf3fc;--muted:#9baac0;--line:#29384c;--nav:#070d16;--nav2:#142238;--blue:#5684ff;--blue2:#1b2b49;--shadow:0 14px 38px rgba(0,0,0,.34)}
+html,body,#app{background:#080d15!important;color:#edf3fc!important}body{background:radial-gradient(ellipse at 82% 0%,#14233b 0,transparent 35%),#080d15!important}
+.login-wrap,.login-side{background:#0b111b!important;color:#edf3fc!important}.login-card h2,.login-card .brand{color:#edf3fc!important}.login-card>p{color:#9baac0!important}
+.field label,.form-grid label{color:#c0ccdc!important}
+.field input,.field select,.field textarea,.form-grid input,.form-grid select,.form-grid textarea,.search,.date-pill{background:#0d1725!important;color:#edf3fc!important;border-color:#30425b!important}
+.field input::placeholder,.form-grid input::placeholder,.form-grid textarea::placeholder,.search::placeholder{color:#8293aa!important}
+.field input:focus,.field select:focus,.field textarea:focus,.form-grid input:focus,.form-grid select:focus,.form-grid textarea:focus{background:#142238!important;color:#fff!important}
+.sidebar{background:linear-gradient(180deg,#070d16,#101d30)!important}.main{background:transparent!important;color:#edf3fc!important}
+.page-title,.section-head h3,.panel h3,.stat-value,.modal-head h3{color:#edf3fc!important}.eyebrow,.section-head p,.stat-top,.stat-note,.panel-sub{color:#9baac0!important}
+.stat,.panel,.table-wrap,.table-wrap table{background:#111a27!important;border-color:#29384c!important;color:#edf3fc!important;box-shadow:0 14px 38px rgba(0,0,0,.28)!important}
+th{background:#1a293d!important;color:#b6c5d9!important;border-color:#29384c!important}td{background:#111a27!important;color:#cbd6e5!important;border-color:#29384c!important}td strong{color:#f3f7ff!important}tr:hover td{background:#1a293d!important}
+.modal{background:#111a27!important;border-color:#30425b!important;color:#edf3fc!important}.modal-head{background:#172438!important;border-color:#29384c!important}.modal-head h3{color:#f3f7ff!important}.modal-actions{background:#111a27!important;border-color:#29384c!important}
+.modal-head button,.btn-light{background:#223149!important;color:#dce6f4!important;border-color:#344963!important}.modal-head button:hover,.btn-light:hover{background:#2b405d!important}
+.notice{background:#172844!important;color:#c1d2f1!important}.error-banner{background:#3b2027!important;color:#ffb1b7!important}.empty,.loading{color:#9baac0!important}.toast{background:#263b5c!important;color:#fff!important}select option{background:#111a27;color:#edf3fc}
+@media(max-width:720px){.login-side{background:#0b111b!important}}
+</style>
 </head>
 <body>
 <div id="loginScreen" class="login-wrap">
@@ -183,11 +201,11 @@ body{background:radial-gradient(ellipse at 82% 0%,#14233b 0,transparent 35%),var
   <div class="section-head"><div><h3>Recently registered equipment</h3><p>Latest assets added to your fleet</p></div><button class="btn btn-light" data-goto="equipment">View all equipment →</button></div>
   <div class="table-wrap" id="recentEquipment"><div class="loading">Loading equipment…</div></div>
  </section>
- <section id="page-equipment" class="content"><div class="section-head"><div><h3>Equipment register</h3><p>Manage your machines, vehicles and generators</p></div><div class="toolbar"><input class="search" id="equipmentSearch" placeholder="Search equipment…"><button class="btn btn-primary" id="addEquipment">＋ Add Equipment</button></div></div><div class="table-wrap" id="equipmentTable"><div class="loading">Loading equipment…</div></div></section>
+ <section id="page-equipment" class="content"><div class="section-head"><div><h3>Equipment register</h3><p>Manage your machines, vehicles and generators</p></div><div class="toolbar"><input class="search" id="equipmentSearch" placeholder="Search equipment…"><button class="btn btn-light" id="exportEquipment">Export CSV</button><button class="btn btn-light" id="importEquipment">Import CSV</button><button class="btn btn-primary" id="addEquipment">＋ Add Equipment</button></div></div><div class="table-wrap" id="equipmentTable"><div class="loading">Loading equipment…</div></div></section>
  <section id="page-maintenance" class="content"><div class="section-head"><div><h3>Maintenance records</h3><p>Service history and maintenance costs</p></div><div class="toolbar"><input class="search" id="maintenanceSearch" placeholder="Search records…"><button class="btn btn-primary" id="addMaintenance">＋ Add Record</button></div></div><div class="table-wrap" id="maintenanceTable"><div class="loading">Loading records…</div></div></section>
  <section id="page-types" class="content"><div class="section-head"><div><h3>Maintenance types</h3><p>Configure preventive maintenance intervals</p></div><button class="btn btn-primary" id="addType">＋ Add Type</button></div><div class="table-wrap" id="typesTable"></div></section>
- <section id="page-hours" class="content"><div class="section-head"><div><h3>Operating hours</h3><p>Track equipment usage and daily readings</p></div><button class="btn btn-primary" id="addHours">＋ Add Reading</button></div><div class="table-wrap" id="hoursTable"></div></section>
- <section id="page-parts" class="content"><div class="section-head"><div><h3>Spare parts catalogue</h3><p>Part details, suppliers and reorder thresholds</p></div><button class="btn btn-primary" id="addPart">＋ Add Part</button></div><div class="table-wrap" id="partsTable"></div></section>
+ <section id="page-hours" class="content"><div class="section-head"><div><h3>Operating hours</h3><p>Track equipment usage and daily readings</p></div><div class="toolbar"><button class="btn btn-light" id="exportHours">Export CSV</button><button class="btn btn-light" id="importHours">Import CSV</button><button class="btn btn-primary" id="addHours">＋ Add Reading</button></div></div><div class="table-wrap" id="hoursTable"></div></section>
+ <section id="page-parts" class="content"><div class="section-head"><div><h3>Spare parts catalogue</h3><p>Part details, suppliers and reorder thresholds</p></div><div class="toolbar"><button class="btn btn-light" id="exportParts">Export CSV</button><button class="btn btn-light" id="importParts">Import CSV</button><button class="btn btn-primary" id="addPart">＋ Add Part</button></div></div><div class="table-wrap" id="partsTable"></div></section>
  <section id="page-warehouses" class="content"><div class="section-head"><div><h3>Warehouses</h3><p>Storage locations and warehouse details</p></div><button class="btn btn-primary" id="addWarehouse">＋ Add Warehouse</button></div><div class="table-wrap" id="warehousesTable"></div><div class="section-head"><div><h3>Stock balances</h3><p>Current quantity by warehouse and part</p></div></div><div class="table-wrap" id="balancesTable"></div></section>
  <section id="page-suppliers" class="content"><div class="section-head"><div><h3>Suppliers</h3><p>Supplier contacts and purchasing information</p></div><button class="btn btn-primary" id="addSupplier">＋ Add Supplier</button></div><div class="table-wrap" id="suppliersTable"></div></section>
  <section id="page-stock" class="content"><div class="section-head"><div><h3>Stock transactions</h3><p>Receipts, issues, returns and adjustments</p></div><button class="btn btn-primary" id="addTransaction">＋ New Transaction</button></div><div class="table-wrap" id="transactionsTable"></div></section>
@@ -200,7 +218,7 @@ body{background:radial-gradient(ellipse at 82% 0%,#14233b 0,transparent 35%),var
  <section id="page-purchases" class="content"><div class="section-head"><div><h3>Purchase orders</h3><p>Track supplier orders and expected delivery</p></div><button class="btn btn-primary" id="addPurchase">＋ Create Purchase Order</button></div><div class="table-wrap" id="purchasesTable"></div></section>
 </main></div>
 <div class="modal-back" id="modalBack"><div class="modal"><div class="modal-head"><h3 id="modalTitle">Add record</h3><button class="btn btn-light" id="closeModal">✕</button></div><form id="recordForm"><div id="formFields" class="form-grid"></div><div class="modal-actions"><button type="button" class="btn btn-light" id="cancelModal">Cancel</button><button type="submit" class="btn btn-primary">Save record</button></div></form></div></div>
-<div id="toast" class="toast"></div>
+<div id="toast" class="toast"></div><input id="csvImportFile" type="file" accept=".csv,text/csv" hidden>
 <script>
 const SUPABASE_URL="https://arayncqksyddiygkbjzg.supabase.co";
 const SUPABASE_KEY="sb_publishable_FueLZy87Cb5FPnC6I1tDjw_kI2gDPn8";
@@ -312,7 +330,17 @@ document.getElementById("recordForm").addEventListener("submit",async e=>{
   }
   let result;
   if(activeSpec.table==="equipment"&&editingEquipmentId)result=await db.from("equipment").update(payload).eq("id",editingEquipmentId);
-  else result=await db.from(activeSpec.table).insert(payload);
+  else if(activeSpec.table==="operating_hour_logs"){
+   const asset=state.equipment.find(x=>String(x.id)===String(payload.equipment_id));
+   if(!asset)throw new Error("Select a valid equipment item.");
+   const previous=Number(asset.current_operating_hours||0),reading=Number(payload.operating_hours);
+   if(reading<previous)throw new Error("Reading cannot be lower than the current equipment meter ("+previous+").");
+   result=await db.from("operating_hour_logs").insert(payload);
+   if(!result.error){
+    const upd=await db.from("equipment").update({current_operating_hours:reading}).eq("id",payload.equipment_id);
+    if(upd.error)throw new Error("Reading saved, but equipment meter update failed: "+upd.error.message);
+   }
+  }else result=await db.from(activeSpec.table).insert(payload);
   if(result.error)throw result.error;
   const wasEdit=!!editingEquipmentId;closeForm();e.target.reset();
   toast(wasEdit?"Equipment updated successfully":"Record saved successfully");await loadAll();
@@ -331,6 +359,83 @@ document.getElementById("equipmentTable").addEventListener("click",async e=>{
   finally{del.disabled=false}
  }
 });
+
+// CSV import/export. Import is append-only and never deletes or overwrites existing records.
+function csvCell(v){const s=String(v??"");return /[",\r\n]/.test(s)?'"'+s.replace(/"/g,'""')+'"':s}
+function exportCsv(filename,headers,rows){
+ const csv=[headers.join(","),...rows.map(r=>headers.map(h=>csvCell(r[h])).join(","))].join("\r\n");
+ const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8"}),url=URL.createObjectURL(blob),a=document.createElement("a");
+ a.href=url;a.download=filename;a.click();URL.revokeObjectURL(url);
+}
+function parseCsv(text){
+ const out=[];let row=[],cell="",q=false;
+ for(let i=0;i<text.length;i++){const c=text[i],n=text[i+1];
+  if(q){if(c==='"'&&n==='"'){cell+='"';i++}else if(c==='"')q=false;else cell+=c}
+  else if(c==='"')q=true;else if(c===","){row.push(cell.trim());cell=""}
+  else if(c==="\n"){row.push(cell.trim());if(row.some(x=>x!==""))out.push(row);row=[];cell=""}
+  else if(c!=="\r")cell+=c;
+ }
+ row.push(cell.trim());if(row.some(x=>x!==""))out.push(row);
+ if(!out.length)return [];
+ const heads=out.shift().map(x=>x.replace(/^\ufeff/,"").toLowerCase());
+ return out.map(vals=>Object.fromEntries(heads.map((h,i)=>[h,vals[i]??""])));
+}
+function chooseCsv(kind){const f=document.getElementById("csvImportFile");f.value="";f.dataset.kind=kind;f.click()}
+document.getElementById("exportEquipment").onclick=()=>exportCsv("APFC_Equipment.csv",
+ ["equipment_code","equipment_model","serial_number","project","current_location","current_operating_hours","last_maintenance_date","next_maintenance_due_hours","status","notes"],state.equipment);
+document.getElementById("exportHours").onclick=()=>exportCsv("APFC_Operating_Hours.csv",
+ ["equipment_code","log_date","operating_hours","project","location","diesel_consumption","recorded_by","notes"],
+ state.operating_hour_logs.map(r=>({...r,equipment_code:state.equipment.find(e=>String(e.id)===String(r.equipment_id))?.equipment_code||""})));
+document.getElementById("exportParts").onclick=()=>exportCsv("APFC_Spare_Parts.csv",
+ ["part_code","part_name","category","unit","supplier_code","purchase_price","selling_price","minimum_stock"],
+ state.spare_parts.map(r=>({...r,supplier_code:state.suppliers.find(s=>String(s.id)===String(r.supplier_id))?.supplier_code||""})));
+document.getElementById("importEquipment").onclick=()=>chooseCsv("equipment");
+document.getElementById("importHours").onclick=()=>chooseCsv("hours");
+document.getElementById("importParts").onclick=()=>chooseCsv("parts");
+document.getElementById("csvImportFile").addEventListener("change",async e=>{
+ const file=e.target.files?.[0],kind=e.target.dataset.kind;if(!file||!kind)return;
+ const btn=document.getElementById({equipment:"importEquipment",hours:"importHours",parts:"importParts"}[kind]);btn.disabled=true;
+ try{
+  const rows=parseCsv(await file.text());if(!rows.length)throw new Error("CSV file is empty.");
+  const req={equipment:["equipment_code","equipment_model"],hours:["equipment_code","log_date","operating_hours"],parts:["part_code","part_name"]}[kind];
+  const missing=req.filter(k=>!(k in rows[0]));if(missing.length)throw new Error("Missing columns: "+missing.join(", "));
+  const preview=rows.slice(0,3).map(r=>req.map(k=>k+": "+r[k]).join(" | ")).join("\n");
+  if(!confirm("Import "+rows.length+" rows?\\n\\nPreview:\\n"+preview+"\\n\\nExisting records will not be overwritten."))return;
+  let saved=0;
+  for(let i=0;i<rows.length;i++){
+   const r=rows[i];let tableName,p={};
+   if(kind==="equipment"){
+    tableName="equipment";
+    for(const k of ["equipment_code","equipment_model","serial_number","project","current_location","current_operating_hours","last_maintenance_date","next_maintenance_due_hours","status","notes"])if(r[k]!==undefined&&r[k]!=="")p[k]=r[k];
+    for(const k of ["current_operating_hours","next_maintenance_due_hours"])if(p[k]!==undefined)p[k]=Number(p[k]);
+   }else if(kind==="hours"){
+    tableName="operating_hour_logs";
+    const asset=state.equipment.find(x=>String(x.equipment_code).toLowerCase()===String(r.equipment_code).toLowerCase());
+    if(!asset)throw new Error("Row "+(i+2)+": equipment code "+r.equipment_code+" not found. Import equipment first.");
+    const reading=Number(r.operating_hours),current=Number(asset.current_operating_hours||0);
+    if(!r.log_date||!Number.isFinite(reading)||reading<current)throw new Error("Row "+(i+2)+": invalid date/reading or reading is below current meter ("+current+").");
+    p={equipment_id:asset.id,log_date:r.log_date,operating_hours:reading};
+    for(const k of ["project","location","diesel_consumption","recorded_by","notes"])if(r[k]!==undefined&&r[k]!=="")p[k]=k==="diesel_consumption"?Number(r[k]):r[k];
+   }else{
+    tableName="spare_parts";p={part_code:r.part_code,part_name:r.part_name};
+    for(const k of ["category","unit","purchase_price","selling_price","minimum_stock"])if(r[k]!==undefined&&r[k]!=="")p[k]=["purchase_price","selling_price","minimum_stock"].includes(k)?Number(r[k]):r[k];
+    if(r.supplier_code){const sup=state.suppliers.find(x=>String(x.supplier_code).toLowerCase()===String(r.supplier_code).toLowerCase());if(!sup)throw new Error("Row "+(i+2)+": supplier code "+r.supplier_code+" not found.");p.supplier_id=sup.id}
+   }
+   if(kind==="equipment"&&(!p.equipment_code||!p.equipment_model))throw new Error("Row "+(i+2)+": equipment code and model are required.");
+   if(kind==="parts"&&(!p.part_code||!p.part_name))throw new Error("Row "+(i+2)+": part code and name are required.");
+   const {error}=await db.from(tableName).insert(p);if(error)throw new Error("Row "+(i+2)+": "+error.message);saved++;
+   if(kind==="hours"){
+    const asset=state.equipment.find(x=>String(x.id)===String(p.equipment_id));
+    const {error:uerr}=await db.from("equipment").update({current_operating_hours:Number(p.operating_hours)}).eq("id",asset.id);
+    if(uerr)throw new Error("Row "+(i+2)+": log saved but meter update failed: "+uerr.message);
+    asset.current_operating_hours=Number(p.operating_hours);
+   }
+  }
+  await loadAll();toast("Imported "+saved+" records successfully.");
+ }catch(err){console.error("CSV import:",err);alert("Import stopped: "+err.message+"\\nPreviously saved rows remain; no records were deleted.");await loadAll()}
+ finally{btn.disabled=false;e.target.value=""}
+});
+
 checkSession();
 </script>
 </body></html>
