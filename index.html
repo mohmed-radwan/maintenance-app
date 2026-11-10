@@ -1,370 +1,320 @@
 <!doctype html>
-<html lang="ar" dir="rtl">
+<html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="APFC industrial equipment, maintenance, workshop and inventory management">
-<title>APFC | إدارة المعدات والصيانة والمخازن</title>
+<meta name="viewport" content="width=device-width,initial-scale=1"><meta name="description" content="APFC industrial equipment, maintenance, workshop and inventory management">
+<title>APFC | Industrial Equipment Management</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&family=Manrope:wght@600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
-:root {
-  --bg: #f4f7fc;
-  --panel: #ffffff;
-  --ink: #111c2e;
-  --muted: #6c7a91;
-  --line: #e2e8f0;
-  --nav: #0f172a;
-  --nav2: #1e293b;
-  --blue: #2563eb;
-  --blue-hover: #1d4ed8;
-  --blue-soft: #eff6ff;
-  --teal: #0d9488;
-  --orange: #d97706;
-  --red: #dc2626;
-  --shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
-  --shadow-lg: 0 20px 40px rgba(15, 23, 42, 0.12);
+:root{--bg:#f4f7fb;--panel:#fff;--ink:#17243a;--muted:#7c899d;--line:#e8edf4;--nav:#101d32;--nav2:#192a45;--blue:#3867e8;--blue2:#edf2ff;--teal:#14a995;--orange:#e99a35;--red:#df5b65;--shadow:0 12px 34px rgba(28,48,78,.07)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:'DM Sans',sans-serif}button,input,select,textarea{font:inherit}button{cursor:pointer}.hidden{display:none!important}
+.login-wrap{min-height:100vh;display:grid;grid-template-columns:1.05fr .95fr;background:#fff}.login-art{background:linear-gradient(145deg,#101d32,#203b66);color:#fff;padding:8vw;display:flex;flex-direction:column;justify-content:space-between;position:relative;overflow:hidden}.login-art:after{content:"";position:absolute;width:480px;height:480px;border:1px solid #ffffff20;border-radius:50%;right:-130px;bottom:-150px;box-shadow:0 0 0 55px #ffffff08,0 0 0 110px #ffffff06}.brand{font:800 22px Manrope;letter-spacing:-.7px}.brand b{color:#77a0ff}.art-copy{position:relative;z-index:1;max-width:480px}.art-copy h1{font:800 clamp(34px,4vw,56px)/1.1 Manrope;margin:0 0 18px}.art-copy p{color:#c0cce0;font-size:16px;line-height:1.7}.art-foot{color:#9bacc7;font-size:12px}.login-side{display:grid;place-items:center;padding:30px}.login-card{width:min(390px,100%)}.login-card h2{font:800 30px Manrope;margin:0 0 8px}.login-card>p{color:var(--muted);margin:0 0 30px}.field{display:flex;flex-direction:column;gap:7px;margin-bottom:15px}.field label{font-size:12px;font-weight:700;color:#58677e}.field input,.field select,.field textarea{border:1px solid var(--line);border-radius:10px;padding:12px 13px;outline:none;background:#fff;color:var(--ink);width:100%}.field input:focus,.field select:focus,.field textarea:focus{border-color:#8ca8f7;box-shadow:0 0 0 3px #3867e817}.btn{border:0;border-radius:10px;padding:11px 16px;font-weight:700;transition:.15s}.btn-primary{background:var(--blue);color:#fff}.btn-primary:hover{background:#2855d0;transform:translateY(-1px)}.btn-light{background:#f0f4fa;color:#41516a}.btn-danger{background:#fff0f0;color:#c94b56}.btn-block{width:100%;padding:13px}.login-error{color:#c94b56;font-size:13px;margin-top:12px}.recovery-note{font-size:12px;color:var(--muted);line-height:1.6;margin:-16px 0 20px}.success-message{color:#168b70;font-size:13px;margin-top:12px}
+.app{min-height:100vh}.sidebar{width:250px;background:var(--nav);color:#fff;position:fixed;inset:0 auto 0 0;padding:25px 15px;display:flex;flex-direction:column;z-index:5}.sidebar .brand{padding:0 14px 30px}.nav-label{font-size:10px;letter-spacing:1.4px;color:#72839e;font-weight:800;padding:14px 14px 8px}.nav-btn{width:100%;border:0;background:transparent;color:#aebbd0;text-align:left;padding:11px 13px;border-radius:9px;display:flex;align-items:center;gap:12px;font-size:13px;font-weight:600;margin:2px 0}.nav-btn .ico{width:20px;text-align:center;font-size:16px}.nav-btn:hover{background:#ffffff0d;color:#fff}.nav-btn.active{background:#2d4c7a;color:#fff;box-shadow:inset 3px 0 #80a5ff}.side-bottom{margin-top:auto;padding:12px}.user-chip{border-top:1px solid #ffffff18;padding:17px 8px 8px;display:flex;align-items:center;gap:10px}.avatar{width:34px;height:34px;border-radius:10px;background:#304d78;display:grid;place-items:center;font-weight:800}.user-info{min-width:0;flex:1}.user-info strong{display:block;font-size:12px}.user-info small{color:#91a2bb;font-size:10px}
+.main{margin-left:250px;padding:27px 34px 50px;max-width:1700px}.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;gap:15px}.eyebrow{font-size:11px;color:var(--muted);font-weight:700;letter-spacing:.8px;text-transform:uppercase}.page-title{font:800 27px Manrope;margin:4px 0 0;letter-spacing:-.8px}.top-actions{display:flex;align-items:center;gap:10px}.date-pill{padding:10px 13px;border:1px solid var(--line);background:#fff;border-radius:10px;color:#69778b;font-size:12px}.content{display:none}.content.active{display:block}.section-head{display:flex;align-items:center;justify-content:space-between;margin:25px 0 14px;gap:12px}.section-head h3{font:800 16px Manrope;margin:0}.section-head p{font-size:12px;color:var(--muted);margin:4px 0 0}.stats{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:15px}.stat{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:19px;box-shadow:var(--shadow)}.stat-top{display:flex;justify-content:space-between;align-items:center;color:var(--muted);font-size:12px;font-weight:600}.stat-icon{width:35px;height:35px;border-radius:10px;background:var(--blue2);display:grid;place-items:center;font-size:16px}.stat-value{font:800 29px Manrope;margin:15px 0 4px}.stat-note{font-size:11px;color:var(--muted)}.grid-two{display:grid;grid-template-columns:1.25fr .75fr;gap:16px;margin-top:16px}.panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:19px;box-shadow:var(--shadow);min-width:0}.panel h3{font:800 15px Manrope;margin:0}.panel-sub{font-size:11px;color:var(--muted);margin:5px 0 15px}.chart-box{height:230px;position:relative}.table-wrap{overflow:auto;background:#fff;border:1px solid var(--line);border-radius:13px;box-shadow:var(--shadow)}table{width:100%;border-collapse:collapse;min-width:650px}th{text-align:left;background:#f8fafd;color:#8190a5;font-size:10px;text-transform:uppercase;letter-spacing:.8px;padding:13px 16px;white-space:nowrap}td{padding:14px 16px;border-top:1px solid #eff2f7;font-size:12px;color:#40516a}td strong{color:#1c2b43}.empty{text-align:center;padding:35px;color:var(--muted)}.tag{display:inline-block;border-radius:20px;padding:5px 9px;font-size:10px;font-weight:800;background:#edf2ff;color:#4167ce}.tag.green{background:#e7f8f2;color:#168b70}.tag.orange{background:#fff4e4;color:#bd791e}.tag.red{background:#ffeded;color:#c44e58}.toolbar{display:flex;align-items:center;gap:9px;flex-wrap:wrap}.search{border:1px solid var(--line);border-radius:9px;padding:10px 12px;min-width:220px;outline:none}.search:focus{border-color:#9bb2f4}.notice{padding:12px 14px;border-radius:10px;background:#f1f5ff;color:#526b9d;font-size:12px;margin-bottom:14px}.error-banner{background:#fff1f0;color:#b8474e;border:1px solid #ffd8d5;padding:12px 14px;border-radius:10px;font-size:12px;margin-bottom:14px}.modal-back{position:fixed;inset:0;background:rgba(12,25,45,.58);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px);display:none;align-items:center;justify-content:center;padding:22px;z-index:20;opacity:0;transition:opacity .18s ease}
+.modal-back.show{display:flex;opacity:1}
+.modal{background:#fff;border:1px solid #e9eef6;border-radius:20px;width:min(680px,100%);max-height:min(88vh,850px);overflow:auto;padding:0;box-shadow:0 28px 90px rgba(12,28,55,.24);animation:modalIn .2s ease}
+@keyframes modalIn{from{opacity:0;transform:translateY(10px) scale(.985)}to{opacity:1;transform:translateY(0) scale(1)}}
+.modal-head{display:flex;justify-content:space-between;align-items:center;gap:15px;padding:22px 26px;border-bottom:1px solid #edf1f7;background:linear-gradient(180deg,#fff,#fbfcff);position:sticky;top:0;z-index:2}
+.modal-head h3{font:800 19px Manrope;margin:0;color:#17243a;letter-spacing:-.35px}
+.modal-head button{width:34px;height:34px;padding:0;border-radius:10px;font-size:15px}
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:17px 16px;padding:24px 26px 10px}
+.form-grid>div{min-width:0;display:flex;flex-direction:column;gap:7px}
+.form-grid>div.full{grid-column:1/-1}
+.form-grid label{font-size:12px;font-weight:700;color:#53627a;letter-spacing:.1px}
+.form-grid input,.form-grid select,.form-grid textarea{width:100%;min-width:0;border:1px solid #dfe6f0;border-radius:11px;background:#fbfcfe;color:#17243a;padding:12px 13px;font-size:13px;outline:none;transition:border-color .15s,box-shadow .15s,background .15s}
+.form-grid input,.form-grid select{min-height:44px}
+.form-grid textarea{min-height:82px;resize:vertical;line-height:1.5}
+.form-grid input:hover,.form-grid select:hover,.form-grid textarea:hover{border-color:#c4d0e0;background:#fff}
+.form-grid input:focus,.form-grid select:focus,.form-grid textarea:focus{border-color:#6f91f0;background:#fff;box-shadow:0 0 0 4px rgba(56,103,232,.11)}
+.form-grid input::placeholder,.form-grid textarea::placeholder{color:#a1adbd}
+.modal-actions{display:flex;justify-content:flex-end;gap:10px;padding:18px 26px 24px;margin:0;border-top:1px solid #edf1f7;background:#fff;position:sticky;bottom:0}
+.modal-actions .btn{min-width:112px;padding:11px 17px}
+.modal-actions .btn-primary{box-shadow:0 5px 12px rgba(56,103,232,.18)}
+.form-grid .full{grid-column:1/-1}.modal-actions{display:flex;justify-content:flex-end;gap:9px;margin-top:15px}.row-actions{display:flex;gap:6px;white-space:nowrap}.btn-xs{border:0;border-radius:7px;padding:7px 9px;font-size:11px;font-weight:800}.btn-edit{background:#edf2ff;color:#315bd5}.btn-delete{background:#fff0f0;color:#c44752}.btn-xs:hover{filter:brightness(.96)}\n.toast{position:fixed;right:24px;bottom:24px;background:#14243d;color:#fff;padding:13px 17px;border-radius:10px;box-shadow:var(--shadow);z-index:40;font-size:12px;display:none}.toast.show{display:block}.loading{padding:28px;text-align:center;color:var(--muted);font-size:12px}.muted{color:var(--muted)}.mobile-menu{display:none}
+@media(max-width:1050px){.sidebar{width:220px}.main{margin-left:220px;padding:23px}.stats{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:560px){.modal-back{padding:10px;align-items:flex-end}.modal{width:100%;max-height:92vh;border-radius:18px 18px 12px 12px}.modal-head{padding:18px 18px}.form-grid{grid-template-columns:1fr;gap:14px;padding:19px 18px 8px}.form-grid>div.full{grid-column:auto}.modal-actions{padding:15px 18px 18px}.modal-actions .btn{flex:1;min-width:0}}\n@media(max-width:720px){.login-wrap{grid-template-columns:1fr}.login-art{display:none}.sidebar{width:250px;transform:translateX(-100%);transition:.2s}.sidebar.open{transform:translateX(0)}.main{margin-left:0;padding:18px}.mobile-menu{display:inline-flex}.topbar{align-items:flex-start}.page-title{font-size:23px}.date-pill{display:none}.stats{grid-template-columns:1fr 1fr;gap:9px}.stat{padding:14px}.stat-value{font-size:24px}.grid-two{grid-template-columns:1fr}.form-grid{grid-template-columns:1fr}.form-grid .full{grid-column:auto}.search{min-width:150px;width:100%}}
+</style>
+
+<style id="nexamaintain-visual-polish">
+:root{
+ --bg:#f3f6fc;--panel:#ffffff;--ink:#17243a;--muted:#78869b;
+ --line:#e5ebf5;--nav:#111c33;--nav2:#1b2b4b;--blue:#4169e8;
+ --blue2:#edf2ff;--teal:#13a88f;--orange:#f0a33b;--red:#e35d6a;
+ --shadow:0 14px 38px rgba(25,43,75,.08)
 }
-
-* { box-sizing: border-box; }
-body {
-  margin: 0;
-  background: radial-gradient(ellipse at 80% 0%, #e2e8f0 0%, transparent 40%), var(--bg);
-  color: var(--ink);
-  font-family: 'Cairo', sans-serif;
-  direction: rtl;
+body{background:radial-gradient(ellipse at 82% 0%,#e8efff 0,transparent 34%),var(--bg)}
+.sidebar{background:linear-gradient(180deg,#111c33 0%,#182b4d 100%);box-shadow:8px 0 30px rgba(15,29,53,.08)}
+.sidebar .brand{font-size:23px;letter-spacing:-1px}
+.brand b{color:#78a4ff}
+.nav-btn{border-radius:12px;padding:12px 14px;transition:background .18s,transform .18s}
+.nav-btn:hover{transform:translateX(2px);background:#ffffff12}
+.nav-btn.active{background:linear-gradient(100deg,#3159a2,#294777);box-shadow:inset 3px 0 #8db2ff,0 7px 18px #07152b35}
+.main{padding-top:32px}
+.page-title{letter-spacing:-1.1px}
+.stat,.panel,.table-wrap{border-radius:18px;box-shadow:0 10px 28px rgba(31,52,88,.055);border-color:#e8edf6}
+.stat{position:relative;overflow:hidden;transition:transform .18s,box-shadow .18s}
+.stat:hover{transform:translateY(-3px);box-shadow:0 16px 32px rgba(31,52,88,.1)}
+.stat:after{content:"";position:absolute;inset:auto -18px -35px auto;width:100px;height:100px;border-radius:50%;background:linear-gradient(135deg,#eaf0ff88,#dce8ff22)}
+.stat-icon{border-radius:12px;background:linear-gradient(135deg,#eaf0ff,#dce7ff);color:#4169e8}
+.btn{border-radius:11px;transition:transform .16s,box-shadow .16s,background .16s}
+.btn-primary{background:linear-gradient(135deg,#4a73ef,#315bd5);box-shadow:0 6px 15px rgba(56,103,232,.18)}
+.btn-primary:hover{background:linear-gradient(135deg,#3c66e4,#284fc5);box-shadow:0 9px 20px rgba(56,103,232,.24)}
+.btn-light{background:#f0f4fb;color:#465875;border:1px solid #e6ecf5}
+.btn-light:hover{background:#e8eef9}
+.search{border-radius:11px;background:#fff;padding:11px 14px}
+th{background:#f5f8fe;color:#65758f;padding:15px 17px}
+td{padding:15px 17px}
+tr:hover td{background:#fafcff}
+.tag{border-radius:8px;padding:6px 10px}
+.modal-back{background:rgba(9,20,40,.66);backdrop-filter:blur(9px);-webkit-backdrop-filter:blur(9px);padding:24px}
+.modal{width:min(720px,100%);border:1px solid #ffffffb8;border-radius:24px;box-shadow:0 35px 100px rgba(5,15,35,.35);overflow:hidden}
+.modal-head{padding:25px 30px;background:linear-gradient(120deg,#f4f7ff 0%,#fff 65%);border-bottom:1px solid #e8edf7}
+.modal-head:before{content:"";width:5px;height:30px;border-radius:8px;background:linear-gradient(180deg,#6588f5,#16b49a);margin-right:2px}
+.modal-head h3{font:800 20px Manrope;color:#182844;flex:1}
+.modal-head button{border-radius:11px;background:#eaf0fb;color:#536785;font-size:16px}
+.modal-head button:hover{background:#e0e9fa;color:#234a9d}
+.form-grid{padding:28px 30px 18px;gap:19px 18px}
+.form-grid>div{gap:8px}
+.form-grid label{font-size:12px;font-weight:800;color:#4d5f7a}
+.form-grid input,.form-grid select,.form-grid textarea{
+ border:1px solid #dce5f2;border-radius:12px;background:#f8faff;
+ padding:13px 14px;color:#1b2b45;font-size:13px;min-height:46px;
+ box-shadow:inset 0 1px 2px rgba(25,45,80,.025)
 }
-button, input, select, textarea { font-family: inherit; }
-button { cursor: pointer; }
-.hidden { display: none !important; }
-
-/* Login Screen */
-.login-wrap {
-  min-height: 100vh;
-  display: grid;
-  grid-template-columns: 1.1fr 0.9fr;
-  background: #fff;
+.form-grid textarea{min-height:96px}
+.form-grid input:hover,.form-grid select:hover,.form-grid textarea:hover{border-color:#b9c9e6;background:#fff}
+.form-grid input:focus,.form-grid select:focus,.form-grid textarea:focus{
+ border-color:#6688ef;background:#fff;box-shadow:0 0 0 4px rgba(65,105,232,.13)
 }
-.login-art {
-  background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 100%);
-  color: #fff;
-  padding: 6vw;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  position: relative;
-  overflow: hidden;
-}
-.login-art:after {
-  content: "";
-  position: absolute;
-  width: 500px;
-  height: 500px;
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 50%;
-  left: -150px;
-  bottom: -150px;
-}
-.brand { font: 800 24px 'Manrope', sans-serif; letter-spacing: -0.5px; }
-.brand b { color: #60a5fa; }
-.art-copy h1 { font-size: clamp(28px, 3.5vw, 44px); margin: 0 0 16px; font-weight: 800; line-height: 1.2; }
-.art-copy p { color: #93c5fd; font-size: 16px; line-height: 1.7; }
-.login-side { display: grid; place-items: center; padding: 30px; }
-.login-card { width: min(400px, 100%); }
-.login-card h2 { font-size: 26px; font-weight: 800; margin: 0 0 8px; }
-.login-card p { color: var(--muted); margin: 0 0 28px; }
-
-/* Form Fields & Buttons */
-.field { display: flex; flex-direction: column; gap: 8px; margin-bottom: 18px; }
-.field label { font-size: 13px; font-weight: 700; color: #475569; }
-.field input, .field select, .field textarea {
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 12px 14px;
-  outline: none;
-  background: #f8fafc;
-  color: var(--ink);
-  transition: all 0.2s ease;
-}
-.field input:focus, .field select:focus, .field textarea:focus {
-  border-color: var(--blue);
-  background: #fff;
-  box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
-}
-.btn {
-  border: 0;
-  border-radius: 12px;
-  padding: 11px 18px;
-  font-weight: 700;
-  font-size: 14px;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-}
-.btn-primary { background: linear-gradient(135deg, #2563eb, #1d4ed8); color: #fff; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25); }
-.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(37, 99, 235, 0.35); }
-.btn-light { background: #f1f5f9; color: #334155; }
-.btn-light:hover { background: #e2e8f0; }
-.btn-block { width: 100%; padding: 13px; }
-
-/* Main App Layout */
-.app { min-height: 100vh; display: flex; }
-.sidebar {
-  width: 260px;
-  background: var(--nav);
-  color: #fff;
-  position: fixed;
-  inset: 0 0 0 auto;
-  padding: 24px 16px;
-  display: flex;
-  flex-direction: column;
-  z-index: 5;
-  box-shadow: -5px 0 25px rgba(0,0,0,0.1);
-  overflow-y: auto;
-}
-.sidebar .brand { padding: 0 12px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); }
-.nav-label { font-size: 11px; letter-spacing: 1px; color: #64748b; font-weight: 800; padding: 20px 12px 8px; }
-.nav-btn {
-  width: 100%;
-  border: 0;
-  background: transparent;
-  color: #94a3b8;
-  text-align: right;
-  padding: 11px 14px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  font-size: 14px;
-  font-weight: 700;
-  margin: 2px 0;
-  transition: all 0.2s;
-}
-.nav-btn:hover { background: rgba(255, 255, 255, 0.06); color: #fff; transform: translateX(-3px); }
-.nav-btn.active { background: var(--blue); color: #fff; box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3); }
-
-.side-bottom { margin-top: auto; padding-top: 16px; border-top: 1px solid rgba(255,255,255,0.08); }
-.user-chip { display: flex; align-items: center; gap: 10px; }
-.avatar { width: 36px; height: 36px; border-radius: 10px; background: #334155; display: grid; place-items: center; font-weight: 800; color: #60a5fa; }
-.user-info { flex: 1; min-width: 0; }
-.user-info strong { display: block; font-size: 13px; font-weight: 700; text-overflow: ellipsis; overflow: hidden; }
-.user-info small { color: #64748b; font-size: 11px; }
-
-/* Content Area */
-.main { margin-right: 260px; padding: 32px 40px; width: calc(100% - 260px); }
-.topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 32px; flex-wrap: wrap; gap: 16px; }
-.page-title { font-size: 26px; font-weight: 800; margin: 0; color: var(--ink); }
-.top-actions { display: flex; align-items: center; gap: 12px; }
-.date-pill { padding: 9px 16px; border: 1px solid var(--line); background: #fff; border-radius: 12px; color: #475569; font-size: 13px; font-weight: 700; box-shadow: var(--shadow); }
-
-.content { display: none; }
-.content.active { display: block; animation: fadeIn 0.3s ease; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-
-/* Cards & Stats */
-.stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 24px; }
-.stat { background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 20px; box-shadow: var(--shadow); transition: transform 0.2s, box-shadow 0.2s; }
-.stat:hover { transform: translateY(-3px); box-shadow: var(--shadow-lg); }
-.stat-top { display: flex; justify-content: space-between; align-items: center; color: var(--muted); font-size: 13px; font-weight: 700; }
-.stat-icon { width: 38px; height: 38px; border-radius: 12px; background: var(--blue-soft); color: var(--blue); display: grid; place-items: center; font-size: 18px; }
-.stat-value { font-size: 32px; font-weight: 800; margin: 12px 0 4px; color: var(--ink); }
-.stat-note { font-size: 12px; color: var(--muted); }
-
-.grid-two { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 20px; margin-bottom: 24px; }
-.panel { background: #fff; border: 1px solid var(--line); border-radius: 16px; padding: 22px; box-shadow: var(--shadow); }
-.panel h3 { font-size: 17px; font-weight: 800; margin: 0 0 4px; }
-.panel-sub { font-size: 13px; color: var(--muted); margin-bottom: 18px; }
-.chart-box { height: 240px; position: relative; }
-
-/* Tables */
-.table-wrap { overflow-x: auto; background: #fff; border: 1px solid var(--line); border-radius: 16px; box-shadow: var(--shadow); }
-table { width: 100%; border-collapse: collapse; text-align: right; }
-th { background: #f8fafc; color: #64748b; font-size: 12px; font-weight: 800; padding: 14px 18px; border-bottom: 1px solid var(--line); white-space: nowrap; }
-td { padding: 14px 18px; border-top: 1px solid #f1f5f9; font-size: 13px; color: #334155; }
-tr:hover td { background: #f8fafc; }
-.empty { text-align: center; padding: 40px; color: var(--muted); font-weight: 600; }
-.tag { display: inline-block; border-radius: 8px; padding: 4px 10px; font-size: 11px; font-weight: 800; background: var(--blue-soft); color: var(--blue); }
-.tag.green { background: #dcfce7; color: #15803d; }
-.tag.orange { background: #fef3c7; color: #b45309; }
-.tag.red { background: #fee2e2; color: #b91c1c; }
-
-/* Modal */
-.modal-back { position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; padding: 20px; z-index: 50; opacity: 0; transition: opacity 0.2s; }
-.modal-back.show { display: flex; opacity: 1; }
-.modal { background: #fff; border-radius: 20px; width: min(650px, 100%); max-height: 90vh; overflow-y: auto; box-shadow: var(--shadow-lg); }
-.modal-head { padding: 20px 24px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; background: #f8fafc; }
-.modal-head h3 { margin: 0; font-size: 18px; font-weight: 800; }
-.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; padding: 24px; }
-.form-grid > div.full { grid-column: 1 / -1; }
-.modal-actions { padding: 16px 24px; border-top: 1px solid var(--line); display: flex; justify-content: flex-end; gap: 10px; background: #f8fafc; }
-
-/* Responsiveness */
-@media (max-width: 900px) {
-  .sidebar { transform: translateX(100%); transition: transform 0.2s; }
-  .sidebar.open { transform: translateX(0); }
-  .main { margin-right: 0; width: 100%; padding: 20px; }
-  .grid-two { grid-template-columns: 1fr; }
-  .login-wrap { grid-template-columns: 1fr; }
-  .login-art { display: none; }
+.form-grid input::placeholder,.form-grid textarea::placeholder{color:#a5b1c2}
+.modal-actions{padding:19px 30px 25px;background:#f9fbff;border-top:1px solid #e9eef6;gap:12px}
+.modal-actions .btn{min-width:125px;padding:12px 18px}
+.modal-actions .btn-light{background:#edf1f8;border-color:#e5eaf2}
+.modal-actions .btn-primary{background:linear-gradient(135deg,#4a73ef,#315bd5)}
+.toast{border-radius:13px;padding:15px 19px;box-shadow:0 15px 35px #0c1d3850}
+.login-art{background:radial-gradient(circle at 85% 18%,#3f64a6 0,transparent 35%),linear-gradient(145deg,#101d32,#203b66)}
+.login-card{padding:8px}
+.login-card h2{letter-spacing:-1px}
+.field input,.field select,.field textarea{border-radius:12px;padding:13px 14px;background:#fbfcff}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:#6688ef;box-shadow:0 0 0 4px rgba(65,105,232,.12)}
+@media(max-width:560px){
+ .modal-back{padding:10px;align-items:center}
+ .modal{border-radius:20px;max-height:94vh}
+ .modal-head{padding:19px 20px}
+ .form-grid{padding:21px 20px 12px;gap:15px}
+ .modal-actions{padding:16px 20px 20px}
 }
 </style>
+
 </head>
 <body>
-
-<!-- Login Screen -->
 <div id="loginScreen" class="login-wrap">
- <div class="login-art">
-   <div class="brand">AP<b>FC</b></div>
-   <div class="art-copy">
-     <h1>إدارة متكاملة لأصولك ومعداتك بنقرة واحدة.</h1>
-     <p>منظومة متطورة لمتابعة الصيانة، قطع الغيار، وورش العمل بكفاءة عالية.</p>
-   </div>
-   <div style="font-size: 12px; color: #93c5fd;">نظام APFC لإدارة الصيانة والمخازن</div>
- </div>
- <div class="login-side">
-   <form id="loginForm" class="login-card">
-     <div class="brand" style="color:var(--ink); margin-bottom: 30px;">AP<b>FC</b></div>
-     <h2>مرحباً بك مجدداً</h2>
-     <p>سجل الدخول للوصول إلى لوحة التحكم الخاصة بك.</p>
-     <div class="field">
-       <label>البريد الإلكتروني</label>
-       <input id="email" type="email" required placeholder="name@company.com" dir="ltr">
-     </div>
-     <div class="field">
-       <label>كلمة المرور</label>
-       <input id="password" type="password" required placeholder="••••••••" dir="ltr">
-     </div>
-     <button class="btn btn-primary btn-block" type="submit">تسجيل الدخول</button>
-     <div id="loginError" style="color:var(--red); font-size:13px; margin-top:10px;"></div>
-   </form>
- </div>
+ <div class="login-art"><div class="brand">AP<b>FC</b></div><div class="art-copy"><h1>Keep every asset running at its best.</h1><p>A smarter workspace for equipment, maintenance operations, spare parts and workshop performance.</p></div><div class="art-foot">INDUSTRIAL EQUIPMENT MANAGEMENT</div></div>
+ <div class="login-side"><form id="loginForm" class="login-card"><div class="brand" style="color:#17243a;margin-bottom:38px">AP<b>FC</b></div><h2>Welcome back</h2><p>Sign in to access your maintenance workspace.</p><div class="field"><label>Email address</label><input id="email" type="email" autocomplete="username" required placeholder="name@company.com"></div><div class="field"><label>Password</label><input id="password" type="password" autocomplete="current-password" required placeholder="Enter your password"></div><button class="btn btn-primary btn-block" type="submit">Sign in</button><div id="loginError" class="login-error"></div></form></div>
 </div>
-
-<!-- Main App -->
+<div id="recoveryScreen" class="login-wrap hidden">
+ <div class="login-art"><div class="brand">AP<b>FC</b></div><div class="art-copy"><h1>Secure your maintenance workspace.</h1><p>Choose a new password to regain access to your equipment and maintenance records.</p></div><div class="art-foot">INDUSTRIAL EQUIPMENT MANAGEMENT</div></div>
+ <div class="login-side"><form id="recoveryForm" class="login-card"><div class="brand" style="color:#17243a;margin-bottom:38px">AP<b>FC</b></div><h2>Set a new password</h2><p class="recovery-note">Enter your new password twice, then save it.</p><div class="field"><label>New password</label><input id="newPassword" type="password" autocomplete="new-password" minlength="6" required placeholder="At least 6 characters"></div><div class="field"><label>Confirm new password</label><input id="confirmPassword" type="password" autocomplete="new-password" minlength="6" required placeholder="Repeat your new password"></div><button class="btn btn-primary btn-block" type="submit">Save new password</button><div id="recoveryError" class="login-error"></div></form></div>
+</div>
 <div id="app" class="app hidden">
- <aside id="sidebar" class="sidebar">
-  <div class="brand">AP<b>FC</b></div>
-  <div class="nav-label">مساحة العمل</div>
-  <button class="nav-btn active" data-page="dashboard"><span class="ico">▦</span> لوحة التحكم</button>
-  <button class="nav-btn" data-page="equipment"><span class="ico">▣</span> سجل المعدات</button>
-  <button class="nav-btn" data-page="maintenance"><span class="ico">⚙</span> سجلات الصيانة</button>
-  <button class="nav-btn" data-page="types"><span class="ico">◷</span> أنواع الصيانة</button>
-  <button class="nav-btn" data-page="hours"><span class="ico">◴</span> ساعات التشغيل</button>
-  
-  <div class="nav-label">المخازن والمشتريات</div>
-  <button class="nav-btn" data-page="parts"><span class="ico">◇</span> قطع الغيار</button>
-  <button class="nav-btn" data-page="warehouses"><span class="ico">▤</span> المستودعات</button>
-  <button class="nav-btn" data-page="suppliers"><span class="ico">♧</span> الموردين</button>
-  <button class="nav-btn" data-page="stock"><span class="ico">⇄</span> حركات المخزون</button>
-  <button class="nav-btn" data-page="purchases"><span class="ico">▤</span> أوامر الشراء</button>
-
-  <div class="nav-label">العمليات والورشة</div>
-  <button class="nav-btn" data-page="workorders"><span class="ico">☷</span> أوامر الشغل</button>
-  <button class="nav-btn" data-page="inspections"><span class="ico">✓</span> الفحوصات الفنية</button>
-  <button class="nav-btn" data-page="movements"><span class="ico">⇄</span> حركة المعدات</button>
-  <button class="nav-btn" data-page="schedules"><span class="ico">◷</span> جدول الصيانة الوقائية</button>
-  <button class="nav-btn" data-page="documents"><span class="ico">▧</span> وثائق المعدات</button>
-  <button class="nav-btn" data-page="notifications"><span class="ico">♢</span> التنبيهات</button>
-
-  <div class="side-bottom">
-    <div class="user-chip">
-      <div class="avatar">AP</div>
-      <div class="user-info">
-        <strong id="userEmail">مستخدم APFC</strong>
-        <small>مشرف النظام</small>
-      </div>
-      <button id="logoutBtn" title="تسجيل الخروج" class="btn btn-light" style="padding:6px 10px;">➔</button>
-    </div>
+<aside id="sidebar" class="sidebar">
+ <div class="brand">AP<b>FC</b></div>
+ <div class="nav-label">WORKSPACE</div>
+ <button class="nav-btn active" data-page="dashboard"><span class="ico">▦</span>Dashboard</button>
+ <button class="nav-btn" data-page="equipment"><span class="ico">▣</span>Equipment</button>
+ <button class="nav-btn" data-page="maintenance"><span class="ico">⚙</span>Maintenance Records</button>
+ <button class="nav-btn" data-page="types"><span class="ico">◷</span>Maintenance Types</button>
+ <button class="nav-btn" data-page="hours"><span class="ico">◴</span>Operating Hours</button>
+ <div class="nav-label">INVENTORY</div>
+ <button class="nav-btn" data-page="parts"><span class="ico">◇</span>Spare Parts</button>
+ <button class="nav-btn" data-page="warehouses"><span class="ico">▤</span>Warehouses</button>
+ <button class="nav-btn" data-page="suppliers"><span class="ico">♧</span>Suppliers</button>
+ <button class="nav-btn" data-page="stock"><span class="ico">⇄</span>Stock Transactions</button>
+ <div class="nav-label">OPERATIONS</div>
+ <button class="nav-btn" data-page="workorders"><span class="ico">☷</span>Work Orders</button>
+ <button class="nav-btn" data-page="inspections"><span class="ico">✓</span>Inspections</button>
+ <button class="nav-btn" data-page="movements"><span class="ico">⇄</span>Equipment Movements</button>
+ <button class="nav-btn" data-page="schedules"><span class="ico">◷</span>Preventive Schedules</button>
+ <button class="nav-btn" data-page="documents"><span class="ico">▧</span>Equipment Documents</button>
+ <button class="nav-btn" data-page="notifications"><span class="ico">♢</span>Notifications</button>
+ <div class="nav-label">PROCUREMENT</div>
+ <button class="nav-btn" data-page="purchases"><span class="ico">▤</span>Purchase Orders</button>
+ <div class="side-bottom"><div class="user-chip"><div class="avatar">AP</div><div class="user-info"><strong id="userEmail">Signed in</strong><small>APFC workspace</small></div><button id="logoutBtn" title="Sign out" class="btn btn-light" style="padding:7px 9px">↪</button></div></div>
+</aside>
+<main class="main">
+ <header class="topbar"><div style="display:flex;align-items:center;gap:12px"><button id="mobileMenu" class="btn btn-light mobile-menu">☰</button><div><div class="eyebrow">APFC MANAGEMENT</div><h1 class="page-title" id="pageTitle">Dashboard</h1></div></div><div class="top-actions"><div class="date-pill" id="today"></div><button class="btn btn-primary" id="quickAdd">＋ Add Equipment</button></div></header>
+ <div id="globalError" class="error-banner hidden"></div>
+ <section id="page-dashboard" class="content active">
+  <div class="stats">
+   <div class="stat"><div class="stat-top">Total Equipment <span class="stat-icon">▣</span></div><div class="stat-value" id="statEquipment">—</div><div class="stat-note">Registered assets</div></div>
+   <div class="stat"><div class="stat-top">Maintenance Records <span class="stat-icon">⚙</span></div><div class="stat-value" id="statMaintenance">—</div><div class="stat-note">Logged maintenance activities</div></div>
+   <div class="stat"><div class="stat-top">Open Work Orders <span class="stat-icon">☷</span></div><div class="stat-value" id="statWorkOrders">—</div><div class="stat-note">Work requiring attention</div></div>
+   <div class="stat"><div class="stat-top">Spare Parts <span class="stat-icon">◇</span></div><div class="stat-value" id="statParts">—</div><div class="stat-note">Registered part items</div></div>
   </div>
- </aside>
+  <div class="grid-two"><div class="panel"><h3>Equipment overview</h3><div class="panel-sub">Current equipment status distribution</div><div class="chart-box"><canvas id="equipmentChart"></canvas></div></div><div class="panel"><h3>Quick overview</h3><div class="panel-sub">Your workspace at a glance</div><div id="quickOverview" style="display:grid;gap:15px;padding-top:5px"></div></div></div>
+  <div class="section-head"><div><h3>Recently registered equipment</h3><p>Latest assets added to your fleet</p></div><button class="btn btn-light" data-goto="equipment">View all equipment →</button></div>
+  <div class="table-wrap" id="recentEquipment"><div class="loading">Loading equipment…</div></div>
+ </section>
+ <section id="page-equipment" class="content"><div class="section-head"><div><h3>Equipment register</h3><p>Manage your machines, vehicles and generators</p></div><div class="toolbar"><input class="search" id="equipmentSearch" placeholder="Search equipment…"><button class="btn btn-primary" id="addEquipment">＋ Add Equipment</button></div></div><div class="table-wrap" id="equipmentTable"><div class="loading">Loading equipment…</div></div></section>
+ <section id="page-maintenance" class="content"><div class="section-head"><div><h3>Maintenance records</h3><p>Service history and maintenance costs</p></div><div class="toolbar"><input class="search" id="maintenanceSearch" placeholder="Search records…"><button class="btn btn-primary" id="addMaintenance">＋ Add Record</button></div></div><div class="table-wrap" id="maintenanceTable"><div class="loading">Loading records…</div></div></section>
+ <section id="page-types" class="content"><div class="section-head"><div><h3>Maintenance types</h3><p>Configure preventive maintenance intervals</p></div><button class="btn btn-primary" id="addType">＋ Add Type</button></div><div class="table-wrap" id="typesTable"></div></section>
+ <section id="page-hours" class="content"><div class="section-head"><div><h3>Operating hours</h3><p>Track equipment usage and daily readings</p></div><button class="btn btn-primary" id="addHours">＋ Add Reading</button></div><div class="table-wrap" id="hoursTable"></div></section>
+ <section id="page-parts" class="content"><div class="section-head"><div><h3>Spare parts catalogue</h3><p>Part details, suppliers and reorder thresholds</p></div><button class="btn btn-primary" id="addPart">＋ Add Part</button></div><div class="table-wrap" id="partsTable"></div></section>
+ <section id="page-warehouses" class="content"><div class="section-head"><div><h3>Warehouses</h3><p>Storage locations and warehouse details</p></div><button class="btn btn-primary" id="addWarehouse">＋ Add Warehouse</button></div><div class="table-wrap" id="warehousesTable"></div><div class="section-head"><div><h3>Stock balances</h3><p>Current quantity by warehouse and part</p></div></div><div class="table-wrap" id="balancesTable"></div></section>
+ <section id="page-suppliers" class="content"><div class="section-head"><div><h3>Suppliers</h3><p>Supplier contacts and purchasing information</p></div><button class="btn btn-primary" id="addSupplier">＋ Add Supplier</button></div><div class="table-wrap" id="suppliersTable"></div></section>
+ <section id="page-stock" class="content"><div class="section-head"><div><h3>Stock transactions</h3><p>Receipts, issues, returns and adjustments</p></div><button class="btn btn-primary" id="addTransaction">＋ New Transaction</button></div><div class="table-wrap" id="transactionsTable"></div></section>
+ <section id="page-workorders" class="content"><div class="section-head"><div><h3>Work orders</h3><p>Track maintenance jobs from opening to completion</p></div><button class="btn btn-primary" id="addWorkOrder">＋ Create Work Order</button></div><div class="table-wrap" id="workOrdersTable"></div></section>
+ <section id="page-inspections" class="content"><div class="section-head"><div><h3>Equipment inspections</h3><p>Record routine, incoming and outgoing equipment inspections</p></div><button class="btn btn-primary" id="addInspection">＋ New Inspection</button></div><div class="table-wrap" id="inspectionsTable"></div></section>
+ <section id="page-movements" class="content"><div class="section-head"><div><h3>Equipment movements</h3><p>Track yard entry, transfers, dispatch and returns</p></div><button class="btn btn-primary" id="addMovement">＋ Record Movement</button></div><div class="table-wrap" id="movementsTable"></div></section>
+ <section id="page-schedules" class="content"><div class="section-head"><div><h3>Preventive maintenance schedules</h3><p>Plan service intervals by operating hours or calendar days</p></div><button class="btn btn-primary" id="addSchedule">＋ Add Schedule</button></div><div class="table-wrap" id="schedulesTable"></div></section>
+ <section id="page-documents" class="content"><div class="section-head"><div><h3>Equipment documents</h3><p>Maintain document register and expiry dates. File upload will be connected to Storage separately.</p></div><button class="btn btn-primary" id="addDocument">＋ Add Document Record</button></div><div class="table-wrap" id="documentsTable"></div></section>
+ <section id="page-notifications" class="content"><div class="section-head"><div><h3>System notifications</h3><p>Review alerts generated and stored in APFC</p></div><button class="btn btn-primary" id="refreshNotifications">↻ Refresh</button></div><div class="table-wrap" id="notificationsTable"></div></section>
+ <section id="page-purchases" class="content"><div class="section-head"><div><h3>Purchase orders</h3><p>Track supplier orders and expected delivery</p></div><button class="btn btn-primary" id="addPurchase">＋ Create Purchase Order</button></div><div class="table-wrap" id="purchasesTable"></div></section>
+</main></div>
+<div class="modal-back" id="modalBack"><div class="modal"><div class="modal-head"><h3 id="modalTitle">Add record</h3><button class="btn btn-light" id="closeModal">✕</button></div><form id="recordForm"><div id="formFields" class="form-grid"></div><div class="modal-actions"><button type="button" class="btn btn-light" id="cancelModal">Cancel</button><button type="submit" class="btn btn-primary">Save record</button></div></form></div></div>
+<div id="toast" class="toast"></div>
+<script>
+const SUPABASE_URL="https://arayncqksyddiygkbjzg.supabase.co";
+const SUPABASE_KEY="sb_publishable_FueLZy87Cb5FPnC6I1tDjw_kI2gDPn8";
+const db=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+const state={equipment:[],maintenance_types:[],maintenance_records:[],operating_hour_logs:[],spare_parts:[],warehouses:[],suppliers:[],stock_balances:[],stock_transactions:[],work_orders:[],equipment_inspections:[],equipment_movements:[],equipment_documents:[],preventive_maintenance_schedules:[],system_notifications:[],purchase_orders:[]};
+const specs={
+equipment:{title:"Add Equipment",table:"equipment",fields:[["equipment_code","Equipment Code","text",true],["equipment_model","Equipment Model","text",true],["serial_number","Serial Number"],["project","Project"],["current_location","Current Location"],["current_operating_hours","Current Operating Hours","number"],["last_maintenance_date","Last Maintenance Date","date"],["next_maintenance_due_hours","Next Maintenance Due Hours","number"],["status","Status","select",false,["Active","Under Maintenance","Out of Service"]],["notes","Notes","textarea"]]},
+maintenance_types:{title:"Add Maintenance Type",table:"maintenance_types",fields:[["maintenance_name","Maintenance Name","text",true],["interval_hours","Interval (Hours)","number"],["description","Description","textarea"]]},
+maintenance_records:{title:"Add Maintenance Record",table:"maintenance_records",fields:[["equipment_id","Equipment","fk",true,"equipment"],["maintenance_type_id","Maintenance Type","fk",false,"maintenance_types"],["maintenance_date","Maintenance Date","date",true],["operating_hours","Operating Hours","number"],["maintenance_description","Description","textarea"],["parts_replaced","Parts Replaced","textarea"],["labor_cost","Labor Cost","number"],["spare_parts_cost","Spare Parts Cost","number"],["total_cost","Total Cost","number"],["next_due_hours","Next Due Hours","number"],["performed_by","Performed By"],["remarks","Remarks","textarea"]]},
+operating_hour_logs:{title:"Add Operating Hours",table:"operating_hour_logs",fields:[["equipment_id","Equipment","fk",true,"equipment"],["log_date","Log Date","date",true],["operating_hours","Operating Hours","number",true],["project","Project"],["location","Location"],["diesel_consumption","Diesel Consumption","number"],["recorded_by","Recorded By"],["notes","Notes","textarea"]]},
+spare_parts:{title:"Add Spare Part",table:"spare_parts",fields:[["part_code","Part Code","text",true],["part_name","Part Name","text",true],["category","Category"],["unit","Unit"],["supplier_id","Supplier","fk",false,"suppliers"],["purchase_price","Purchase Price","number"],["selling_price","Selling Price","number"],["minimum_stock","Minimum Stock","number"]]},
+warehouses:{title:"Add Warehouse",table:"warehouses",fields:[["warehouse_code","Warehouse Code","text",true],["warehouse_name","Warehouse Name","text",true],["location","Location"],["notes","Notes","textarea"]]},
+suppliers:{title:"Add Supplier",table:"suppliers",fields:[["supplier_code","Supplier Code"],["supplier_name","Supplier Name","text",true],["contact_person","Contact Person"],["phone","Phone"],["email","Email","email"],["address","Address"],["notes","Notes","textarea"]]},
+stock_transactions:{title:"New Stock Transaction",table:"stock_transactions",fields:[["warehouse_id","Warehouse","fk",true,"warehouses"],["spare_part_id","Spare Part","fk",true,"spare_parts"],["transaction_type","Transaction Type","select",true,["Receipt","Issue","Return","Adjustment"]],["quantity","Quantity","number",true],["unit_price","Unit Price","number"],["equipment_id","Equipment","fk",false,"equipment"],["work_order_id","Work Order","fk",false,"work_orders"],["supplier_id","Supplier","fk",false,"suppliers"],["transaction_date","Transaction Date","date"],["reference_number","Reference Number"],["notes","Notes","textarea"]]},
+work_orders:{title:"Create Work Order",table:"work_orders",fields:[["work_order_number","Work Order Number","text",true],["equipment_id","Equipment","fk",true,"equipment"],["title","Title","text",true],["description","Description","textarea"],["priority","Priority","select",false,["Low","Medium","High","Critical"]],["status","Status","select",false,["Open","In Progress","On Hold","Completed","Cancelled"]],["opened_at","Opened Date","date"],["assigned_to","Assigned To"],["labor_cost","Labor Cost","number"],["notes","Notes","textarea"]]},
+equipment_inspections:{title:"New Equipment Inspection",table:"equipment_inspections",fields:[["equipment_id","Equipment","fk",true,"equipment"],["inspection_type","Inspection Type","select",true,["Incoming","Outgoing","Routine","Safety","Pre-Dispatch"]],["inspection_status","Inspection Status","select",true,["Pending","Passed","Failed","Conditional"]],["inspected_by","Inspected By"],["findings","Findings","textarea"],["corrective_actions","Corrective Actions","textarea"],["next_inspection_date","Next Inspection Date","date"]]},
+equipment_movements:{title:"Record Equipment Movement",table:"equipment_movements",fields:[["equipment_id","Equipment","fk",true,"equipment"],["movement_type","Movement Type","select",true,["Yard Entry","Yard Exit","Internal Transfer","Project Dispatch","Project Return"]],["from_location","From Location"],["to_location","To Location"],["project","Project"],["reference_number","Reference Number"],["handled_by","Handled By"],["notes","Notes","textarea"]]},
+preventive_maintenance_schedules:{title:"Add Preventive Schedule",table:"preventive_maintenance_schedules",fields:[["equipment_id","Equipment","fk",true,"equipment"],["maintenance_type_id","Maintenance Type","fk",false,"maintenance_types"],["schedule_name","Schedule Name","text",true],["interval_hours","Interval Hours","number"],["interval_days","Interval Days","number"],["last_service_hours","Last Service Hours","number"],["last_service_date","Last Service Date","date"],["next_due_hours","Next Due Hours","number"],["next_due_date","Next Due Date","date"],["alert_before_hours","Alert Before Hours","number"],["alert_before_days","Alert Before Days","number"],["assigned_to","Assigned To"],["is_active","Active","select",false,["true","false"]],["notes","Notes","textarea"]]},
+equipment_documents:{title:"Add Equipment Document Record",table:"equipment_documents",fields:[["equipment_id","Equipment","fk",true,"equipment"],["document_name","Document Name","text",true],["document_type","Document Type","select",true,["Photo","Technical Manual","Inspection Certificate","Registration","Maintenance Report","Other"]],["file_path","File Path / Storage Path","text",true],["expiry_date","Expiry Date","date"],["notes","Notes","textarea"]]},
+purchase_orders:{title:"Create Purchase Order",table:"purchase_orders",fields:[["order_number","Order Number","text",true],["supplier_id","Supplier","fk",true,"suppliers"],["warehouse_id","Warehouse","fk",true,"warehouses"],["order_date","Order Date","date",true],["expected_date","Expected Date","date"],["status","Status","select",false,["Draft","Pending","Approved","Ordered","Partially Received","Received","Cancelled"]],["total_amount","Total Amount","number"],["notes","Notes","textarea"]]}
+};
+const orderColumns={equipment:"created_at",maintenance_types:"created_at",maintenance_records:"maintenance_date",operating_hour_logs:"log_date",spare_parts:"created_at",warehouses:"created_at",suppliers:"created_at",stock_balances:"updated_at",stock_transactions:"transaction_date",work_orders:"created_at",equipment_inspections:"inspection_date",equipment_movements:"movement_date",equipment_documents:"created_at",preventive_maintenance_schedules:"created_at",system_notifications:"created_at",purchase_orders:"order_date"};
+const titles={dashboard:"Dashboard",equipment:"Equipment",maintenance:"Maintenance Records",types:"Maintenance Types",hours:"Operating Hours",parts:"Spare Parts",warehouses:"Warehouses",suppliers:"Suppliers",stock:"Stock Transactions",workorders:"Work Orders",inspections:"Equipment Inspections",movements:"Equipment Movements",schedules:"Preventive Maintenance",documents:"Equipment Documents",notifications:"Notifications",purchases:"Purchase Orders"};
+function toast(msg){const el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");setTimeout(()=>el.classList.remove("show"),3200)}
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function fmt(v){return v==null||v===""?"—":esc(v)}
+function dateFmt(v){if(!v)return"—";const d=new Date(v+"T00:00:00");return isNaN(d)?esc(v):d.toLocaleDateString()}
+function statusTag(v){const s=String(v||"").toLowerCase();let c=s.includes("active")||s.includes("completed")?"green":s.includes("out")||s.includes("critical")||s.includes("cancel")?"red":s.includes("progress")||s.includes("hold")||s.includes("under")?"orange":"";return `<span class="tag ${c}">${fmt(v||"Not set")}</span>`}
+function table(headers,rows,empty="No records found"){if(!rows.length)return `<div class="empty">${empty}</div>`;return `<table><thead><tr>${headers.map(h=>`<th>${h}</th>`).join("")}</tr></thead><tbody>${rows.join("")}</tbody></table>`}
+function row(cells){return `<tr>${cells.map(x=>`<td>${x}</td>`).join("")}</tr>`}
+async function loadOne(tableName,select="*"){try{let q=db.from(tableName).select(select);const col=orderColumns[tableName];if(col)q=q.order(col,{ascending:false});const {data,error}=await q;if(error)throw error;state[tableName]=data||[];return true}catch(e){console.error("Load "+tableName,e);state[tableName]=[];return false}}
+async function loadAll(){const names=Object.keys(state);const outcomes=await Promise.all(names.map(n=>loadOne(n)));renderAll();const failed=names.filter((n,i)=>!outcomes[i]);const banner=document.getElementById("globalError");if(failed.length){banner.textContent="Some sections could not load: "+failed.join(", ")+". Other sections remain available. Check table permissions or schema for the affected section.";banner.classList.remove("hidden")}else banner.classList.add("hidden")}
+function renderAll(){renderDashboard();renderEquipment();renderMaintenance();renderTypes();renderHours();renderParts();renderWarehouses();renderSuppliers();renderTransactions();renderWorkOrders();renderInspections();renderMovements();renderSchedules();renderDocuments();renderNotifications();renderPurchases()}
+function renderDashboard(){const e=state.equipment,m=state.maintenance_records,w=state.work_orders,p=state.spare_parts;document.getElementById("statEquipment").textContent=e.length;document.getElementById("statMaintenance").textContent=m.length;document.getElementById("statWorkOrders").textContent=w.filter(x=>!["completed","cancelled"].includes(String(x.status||"").toLowerCase())).length;document.getElementById("statParts").textContent=p.length;
+const active=e.filter(x=>String(x.status||"").toLowerCase()==="active").length,under=e.filter(x=>String(x.status||"").toLowerCase().includes("maintenance")).length,out=e.filter(x=>String(x.status||"").toLowerCase().includes("out")).length;
+if(window.Chart){if(window.eqChart)window.eqChart.destroy();window.eqChart=new Chart(document.getElementById("equipmentChart"),{type:"doughnut",data:{labels:["Active","Under Maintenance","Out of Service","Other"],datasets:[{data:[active,under,out,Math.max(0,e.length-active-under-out)],backgroundColor:["#3867e8","#e99a35","#df5b65","#d9e1ee"],borderWidth:0,hoverOffset:5}]},options:{maintainAspectRatio:false,cutout:"70%",plugins:{legend:{position:"bottom",labels:{usePointStyle:true,boxWidth:7,padding:17,font:{size:10}}}}}})}
+document.getElementById("quickOverview").innerHTML=[["Active equipment",active,"#3867e8"],["Under maintenance",under,"#e99a35"],["Out of service",out,"#df5b65"],["Warehouses",state.warehouses.length,"#14a995"]].map(x=>`<div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;color:#718098"><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${x[2]};margin-right:9px"></i>${x[0]}</span><strong style="font:800 17px Manrope">${x[1]}</strong></div>`).join("");
+document.getElementById("recentEquipment").innerHTML=table(["Equipment Code","Model","Project","Location","Operating Hours","Status"],e.slice(0,6).map(x=>row([`<strong>${fmt(x.equipment_code)}</strong>`,fmt(x.equipment_model),fmt(x.project),fmt(x.current_location),fmt(x.current_operating_hours),statusTag(x.status)])))}
+function renderEquipment(filter=""){const list=state.equipment.filter(x=>[x.equipment_code,x.equipment_model,x.serial_number,x.project,x.current_location].join(" ").toLowerCase().includes(filter.toLowerCase()));window.apfcEquipmentVisible=list;document.getElementById("equipmentTable").innerHTML=table(["Equipment Code","Model","Serial Number","Project","Location","Operating Hours","Next Due","Status"],list.map(x=>row([`<strong>${fmt(x.equipment_code)}</strong>`,fmt(x.equipment_model),fmt(x.serial_number),fmt(x.project),fmt(x.current_location),fmt(x.current_operating_hours),fmt(x.next_maintenance_due_hours),statusTag(x.status)])))}
+function renderMaintenance(){window.apfcMaintenanceVisible=state.maintenance_records;document.getElementById("maintenanceTable").innerHTML=table(["Date","Equipment","Maintenance Type","Operating Hours","Description","Total Cost","Performed By"],state.maintenance_records.map(x=>row([dateFmt(x.maintenance_date),fmt(x.equipment?.equipment_code||state.equipment.find(e=>e.id===x.equipment_id)?.equipment_code),fmt(x.maintenance_types?.maintenance_name||state.maintenance_types.find(t=>t.id===x.maintenance_type_id)?.maintenance_name),fmt(x.operating_hours),fmt(x.maintenance_description),fmt(x.total_cost),fmt(x.performed_by)])))}
+function renderTypes(){document.getElementById("typesTable").innerHTML=table(["Maintenance Name","Interval (Hours)","Description"],state.maintenance_types.map(x=>row([`<strong>${fmt(x.maintenance_name)}</strong>`,fmt(x.interval_hours),fmt(x.description)])))}
+function renderHours(){document.getElementById("hoursTable").innerHTML=table(["Date","Equipment","Operating Hours","Project","Location","Diesel Consumption","Recorded By"],state.operating_hour_logs.map(x=>row([dateFmt(x.log_date),fmt(state.equipment.find(e=>e.id===x.equipment_id)?.equipment_code),fmt(x.operating_hours),fmt(x.project),fmt(x.location),fmt(x.diesel_consumption),fmt(x.recorded_by)])))}
+function renderParts(){document.getElementById("partsTable").innerHTML=table(["Part Code","Part Name","Category","Unit","Supplier","Purchase Price","Minimum Stock"],state.spare_parts.map(x=>row([`<strong>${fmt(x.part_code)}</strong>`,fmt(x.part_name),fmt(x.category),fmt(x.unit),fmt(x.suppliers?.supplier_name||state.suppliers.find(s=>s.id===x.supplier_id)?.supplier_name),fmt(x.purchase_price),fmt(x.minimum_stock)])))}
+function renderWarehouses(){document.getElementById("warehousesTable").innerHTML=table(["Code","Warehouse Name","Location","Notes"],state.warehouses.map(x=>row([fmt(x.warehouse_code),`<strong>${fmt(x.warehouse_name)}</strong>`,fmt(x.location),fmt(x.notes)])));document.getElementById("balancesTable").innerHTML=table(["Warehouse","Part Code","Part Name","Quantity","Minimum Stock"],state.stock_balances.map(x=>row([fmt(x.warehouses?.warehouse_name||state.warehouses.find(w=>w.id===x.warehouse_id)?.warehouse_name),fmt(x.spare_parts?.part_code||state.spare_parts.find(p=>p.id===x.spare_part_id)?.part_code),fmt(x.spare_parts?.part_name||state.spare_parts.find(p=>p.id===x.spare_part_id)?.part_name),`<strong>${fmt(x.quantity)}</strong>`,fmt(x.spare_parts?.minimum_stock||state.spare_parts.find(p=>p.id===x.spare_part_id)?.minimum_stock)])))}
+function renderSuppliers(){document.getElementById("suppliersTable").innerHTML=table(["Supplier Code","Supplier Name","Contact Person","Phone","Email","Address"],state.suppliers.map(x=>row([fmt(x.supplier_code),`<strong>${fmt(x.supplier_name)}</strong>`,fmt(x.contact_person),fmt(x.phone),fmt(x.email),fmt(x.address)])))}
+function renderTransactions(){document.getElementById("transactionsTable").innerHTML=table(["Date","Type","Part","Warehouse","Quantity","Unit Price","Reference"],state.stock_transactions.map(x=>row([dateFmt(x.transaction_date),statusTag(x.transaction_type),fmt(x.spare_parts?.part_name||state.spare_parts.find(p=>p.id===x.spare_part_id)?.part_name),fmt(x.warehouses?.warehouse_name||state.warehouses.find(w=>w.id===x.warehouse_id)?.warehouse_name),fmt(x.quantity),fmt(x.unit_price),fmt(x.reference_number)])))}
+function renderWorkOrders(){document.getElementById("workOrdersTable").innerHTML=table(["Work Order","Title","Equipment","Priority","Status","Opened","Assigned To"],state.work_orders.map(x=>row([`<strong>${fmt(x.work_order_number)}</strong>`,fmt(x.title),fmt(x.equipment?.equipment_code||state.equipment.find(e=>e.id===x.equipment_id)?.equipment_code),statusTag(x.priority),statusTag(x.status),dateFmt(x.opened_at),fmt(x.assigned_to)])))}
+function renderInspections(){document.getElementById("inspectionsTable").innerHTML=table(["Date","Equipment","Type","Status","Inspector","Findings","Next Inspection"],state.equipment_inspections.map(x=>row([dateFmt(x.inspection_date),fmt(state.equipment.find(e=>e.id===x.equipment_id)?.equipment_code),fmt(x.inspection_type),statusTag(x.inspection_status),fmt(x.inspected_by),fmt(x.findings),dateFmt(x.next_inspection_date)])))}
+function renderMovements(){document.getElementById("movementsTable").innerHTML=table(["Date","Equipment","Movement","From","To","Project","Handled By"],state.equipment_movements.map(x=>row([dateFmt(x.movement_date),fmt(state.equipment.find(e=>e.id===x.equipment_id)?.equipment_code),statusTag(x.movement_type),fmt(x.from_location),fmt(x.to_location),fmt(x.project),fmt(x.handled_by)])))}
+function renderSchedules(){document.getElementById("schedulesTable").innerHTML=table(["Equipment","Schedule","Interval Hours","Interval Days","Next Due Hours","Next Due Date","Assigned To","Active"],state.preventive_maintenance_schedules.map(x=>row([fmt(state.equipment.find(e=>e.id===x.equipment_id)?.equipment_code),`<strong>${fmt(x.schedule_name)}</strong>`,fmt(x.interval_hours),fmt(x.interval_days),fmt(x.next_due_hours),dateFmt(x.next_due_date),fmt(x.assigned_to),statusTag(x.is_active===false?"Inactive":"Active")])))}
+function renderDocuments(){document.getElementById("documentsTable").innerHTML=table(["Equipment","Document","Type","Storage Path","Expiry Date","Created"],state.equipment_documents.map(x=>row([fmt(state.equipment.find(e=>e.id===x.equipment_id)?.equipment_code),`<strong>${fmt(x.document_name)}</strong>`,fmt(x.document_type),fmt(x.file_path),dateFmt(x.expiry_date),dateFmt(x.created_at)])))}
+function renderNotifications(){document.getElementById("notificationsTable").innerHTML=table(["Date","Severity","Title","Message","Equipment","Read"],state.system_notifications.map(x=>row([dateFmt(x.created_at),statusTag(x.severity),`<strong>${fmt(x.title)}</strong>`,fmt(x.message),fmt(state.equipment.find(e=>e.id===x.related_equipment_id)?.equipment_code),statusTag(x.is_read?"Read":"Unread")])))}
+function renderPurchases(){document.getElementById("purchasesTable").innerHTML=table(["Order Number","Supplier","Warehouse","Order Date","Expected Date","Status","Total Amount"],state.purchase_orders.map(x=>row([`<strong>${fmt(x.order_number)}</strong>`,fmt(state.suppliers.find(v=>v.id===x.supplier_id)?.supplier_name),fmt(state.warehouses.find(v=>v.id===x.warehouse_id)?.warehouse_name),dateFmt(x.order_date),dateFmt(x.expected_date),statusTag(x.status),fmt(x.total_amount)])))}
+function navigate(page){document.querySelectorAll(".content").forEach(x=>x.classList.remove("active"));document.getElementById("page-"+page)?.classList.add("active");document.querySelectorAll(".nav-btn").forEach(x=>x.classList.toggle("active",x.dataset.page===page));document.getElementById("pageTitle").textContent=titles[page]||"Dashboard";document.getElementById("sidebar").classList.remove("open");document.getElementById("quickAdd").style.display=page==="dashboard"||page==="equipment"?"inline-block":"none"}
+document.querySelectorAll(".nav-btn").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.page)));document.querySelectorAll("[data-goto]").forEach(b=>b.addEventListener("click",()=>navigate(b.dataset.goto)));document.getElementById("mobileMenu").onclick=()=>document.getElementById("sidebar").classList.toggle("open");document.getElementById("today").textContent=new Date().toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric",year:"numeric"});
+let recoveryMode = /(?:^|&)type=recovery(?:&|$)/.test(location.hash.replace(/^#/, "")) || new URLSearchParams(location.search).get("type")==="recovery";
+function showRecoveryScreen(){recoveryMode=true;document.getElementById("loginScreen").classList.add("hidden");document.getElementById("app").classList.add("hidden");document.getElementById("recoveryScreen").classList.remove("hidden")}
+function clearAuthUrl(){history.replaceState({},document.title,location.pathname+location.search)}
+async function showApp(session){document.getElementById("loginScreen").classList.add("hidden");document.getElementById("recoveryScreen").classList.add("hidden");document.getElementById("app").classList.remove("hidden");document.getElementById("userEmail").textContent=session.user.email||"Signed in";await loadAll()}
+async function checkSession(){if(recoveryMode){showRecoveryScreen();return}const {data}=await db.auth.getSession();if(data.session)await showApp(data.session)}
+document.getElementById("loginForm").addEventListener("submit",async e=>{e.preventDefault();const btn=e.target.querySelector("button");btn.disabled=true;btn.textContent="Signing in…";document.getElementById("loginError").textContent="";document.getElementById("loginError").className="login-error";const {data,error}=await db.auth.signInWithPassword({email:document.getElementById("email").value.trim(),password:document.getElementById("password").value});btn.disabled=false;btn.textContent="Sign in";if(error){document.getElementById("loginError").textContent=error.message;return}await showApp(data.session)});
+document.getElementById("recoveryForm").addEventListener("submit",async e=>{e.preventDefault();const message=document.getElementById("recoveryError");const btn=e.target.querySelector('button[type="submit"]');const password=document.getElementById("newPassword").value;const confirm=document.getElementById("confirmPassword").value;message.textContent="";message.className="login-error";if(password.length<6){message.textContent="Password must be at least 6 characters.";return}if(password!==confirm){message.textContent="The two passwords do not match.";return}btn.disabled=true;btn.textContent="Saving…";const {error}=await db.auth.updateUser({password});btn.disabled=false;btn.textContent="Save new password";if(error){message.textContent=error.message;return}recoveryMode=false;clearAuthUrl();await db.auth.signOut();document.getElementById("recoveryScreen").classList.add("hidden");document.getElementById("loginScreen").classList.remove("hidden");document.getElementById("loginError").className="success-message";document.getElementById("loginError").textContent="Password updated successfully. Sign in with your new password.";e.target.reset()});
+document.getElementById("logoutBtn").onclick=async()=>{await db.auth.signOut();location.reload()};
+db.auth.onAuthStateChange((event,session)=>{if(event==="PASSWORD_RECOVERY"||recoveryMode){showRecoveryScreen();return}if(session&&document.getElementById("app").classList.contains("hidden"))showApp(session)});
+document.getElementById("equipmentSearch").addEventListener("input",e=>renderEquipment(e.target.value));
+document.getElementById("maintenanceSearch").addEventListener("input",e=>{const q=e.target.value.toLowerCase();const filtered=state.maintenance_records.filter(x=>[x.maintenance_description,x.performed_by,x.remarks].join(" ").toLowerCase().includes(q));window.apfcMaintenanceVisible=filtered;document.getElementById("maintenanceTable").innerHTML=table(["Date","Equipment","Maintenance Type","Operating Hours","Description","Total Cost","Performed By"],filtered.map(x=>row([dateFmt(x.maintenance_date),fmt(state.equipment.find(e=>e.id===x.equipment_id)?.equipment_code),fmt(state.maintenance_types.find(t=>t.id===x.maintenance_type_id)?.maintenance_name),fmt(x.operating_hours),fmt(x.maintenance_description),fmt(x.total_cost),fmt(x.performed_by)])))});
+let activeSpec=null;
+function openForm(key){activeSpec=specs[key];if(!activeSpec)return;document.getElementById("modalTitle").textContent=recordId?"Edit "+activeSpec.title.replace(/^Add |^New |^Create /,"") : activeSpec.title;editingRecordId=recordId;const wrap=document.getElementById("formFields");wrap.innerHTML="";activeSpec.fields.forEach(([name,label,type="text",required=false,extra])=>{const box=document.createElement("div");box.className=(type==="textarea"?"full":"");let control;if(type==="select"){control=document.createElement("select");control.innerHTML='<option value="">Select…</option>'+extra.map(v=>`<option>${esc(v)}</option>`).join("")}else if(type==="fk"){control=document.createElement("select");const opts=state[extra]||[];const labelKey=({equipment:"equipment_code",maintenance_types:"maintenance_name",suppliers:"supplier_name",warehouses:"warehouse_name",spare_parts:"part_name",work_orders:"work_order_number"})[extra];control.innerHTML='<option value="">Select…</option>'+opts.map(v=>`<option value="${esc(v.id)}">${esc(v[labelKey]||v.id)}</option>`).join("")}else if(type==="textarea"){control=document.createElement("textarea");control.rows=2}else{control=document.createElement("input");control.type=type}control.name=name;control.required=!!required;if(type==="date"&&name==="maintenance_date"||type==="date"&&name==="log_date"||type==="date"&&name==="opened_at"||type==="date"&&name==="transaction_date")control.value=new Date().toISOString().slice(0,10);const lab=document.createElement("label");lab.textContent=label+(required?" *":"");box.append(lab,control);wrap.append(box)});
+if(recordId){
+ const record=(state[activeSpec.table]||[]).find(item=>String(item.id)===String(recordId));
+ if(record){
+  activeSpec.fields.forEach(([name,label,type="text"])=>{
+   const control=wrap.querySelector(`[name="${name}"]`);
+   if(control && record[name]!==null && record[name]!==undefined) control.value=String(record[name]);
+  });
+ }
+}
+document.getElementById("modalBack").classList.add("show")}
+function closeForm(){document.getElementById("modalBack").classList.remove("show");editingRecordId=null}
+document.getElementById("closeModal").onclick=closeForm;document.getElementById("cancelModal").onclick=closeForm;document.getElementById("quickAdd").onclick=()=>openForm("equipment");document.getElementById("refreshNotifications").onclick=async()=>{await loadOne("system_notifications");renderNotifications();toast("Notifications refreshed")};
+const buttons={addEquipment:"equipment",addMaintenance:"maintenance_records",addType:"maintenance_types",addHours:"operating_hour_logs",addPart:"spare_parts",addWarehouse:"warehouses",addSupplier:"suppliers",addTransaction:"stock_transactions",addWorkOrder:"work_orders",addInspection:"equipment_inspections",addMovement:"equipment_movements",addSchedule:"preventive_maintenance_schedules",addDocument:"equipment_documents",addPurchase:"purchase_orders"};Object.entries(buttons).forEach(([id,key])=>document.getElementById(id).onclick=()=>openForm(key));
+document.getElementById("recordForm").addEventListener("submit",async e=>{e.preventDefault();if(!activeSpec)return;const btn=e.target.querySelector('[type="submit"]');btn.disabled=true;btn.textContent="Saving…";const fd=new FormData(e.target);const payload={};for(const [k,v] of fd.entries()){if(v==="")continue;const field=activeSpec.fields.find(f=>f[0]===k);payload[k]=field&&(field[2]==="number")?Number(v):(k==="is_active"?v==="true":v)}const wasEditing=!!editingRecordId;const result=editingRecordId?await db.from(activeSpec.table).update(payload).eq("id",editingRecordId):await db.from(activeSpec.table).insert(payload);const {error}=result;btn.disabled=false;btn.textContent="Save record";if(error){toast("Could not save: "+error.message);return}closeForm();e.target.reset();toast(wasEditing?"Record updated successfully":"Record saved successfully");editingRecordId=null;await loadAll()});
 
- <main class="main">
-  <header class="topbar">
-    <div style="display:flex; align-items:center; gap:12px;">
-      <button id="mobileMenu" class="btn btn-light" style="display:none;">☰</button>
-      <div>
-        <h1 class="page-title" id="pageTitle">لوحة التحكم</h1>
-      </div>
-    </div>
-    <div class="top-actions">
-      <div class="date-pill" id="today"></div>
-      <button class="btn btn-light" id="refreshBtn">↻ تحديث البيانات</button>
-      <button class="btn btn-primary" id="quickAdd">＋ إضافة معدة جديدة</button>
-    </div>
-  </header>
+// APFC record management: add Edit/Delete actions to data tables.
+const apfcTableMap = {
+ equipment:["equipment","equipmentTable"], maintenance_records:["maintenance_records","maintenanceTable"],
+ maintenance_types:["maintenance_types","typesTable"], operating_hour_logs:["operating_hour_logs","hoursTable"],
+ spare_parts:["spare_parts","partsTable"], warehouses:["warehouses","warehousesTable"],
+ suppliers:["suppliers","suppliersTable"], stock_transactions:["stock_transactions","transactionsTable"],
+ work_orders:["work_orders","workOrdersTable"], equipment_inspections:["equipment_inspections","inspectionsTable"],
+ equipment_movements:["equipment_movements","movementsTable"],
+ preventive_maintenance_schedules:["preventive_maintenance_schedules","schedulesTable"],
+ equipment_documents:["equipment_documents","documentsTable"], purchase_orders:["purchase_orders","purchasesTable"]
+};
+const apfcOriginalRenderAll=renderAll;
+renderAll=function(){
+ apfcOriginalRenderAll();
+ Object.entries(apfcTableMap).forEach(([key,[tableName,elementId]])=>{
+  const host=document.getElementById(elementId);
+  if(!host)return;
+  const tableEl=host.querySelector("table");
+  if(!tableEl)return;
+  const head=tableEl.querySelector("thead tr");
+  if(head && !head.querySelector(".actions-heading")){
+   const th=document.createElement("th");th.textContent="Actions";th.className="actions-heading";head.appendChild(th);
+  }
+  const records=state[tableName]||[];
+  const rows=tableEl.querySelectorAll("tbody tr");
+  rows.forEach((tr,index)=>{
+   if(tr.querySelector("[data-apfc-action]"))return;
+   const record=records[index];
+   if(!record || record.id===undefined)return;
+   const td=document.createElement("td");
+   td.innerHTML=`<div class="row-actions"><button type="button" class="btn-xs btn-edit" data-apfc-action="edit" data-table="${tableName}" data-id="${esc(record.id)}">Edit</button><button type="button" class="btn-xs btn-delete" data-apfc-action="delete" data-table="${tableName}" data-id="${esc(record.id)}">Delete</button></div>`;
+   tr.appendChild(td);
+  });
+ });
+};
+document.addEventListener("click",async event=>{
+ const action=event.target.closest("[data-apfc-action]");
+ if(!action)return;
+ const tableName=action.dataset.table,id=action.dataset.id;
+ const entry=Object.entries(apfcTableMap).find(([key,value])=>value[0]===tableName);
+ if(!entry)return;
+ const [key]=entry;
+ if(action.dataset.apfcAction==="edit"){openForm(key,id);return}
+ if(action.dataset.apfcAction==="delete"){
+  const record=(state[tableName]||[]).find(item=>String(item.id)===String(id));
+  const label=record?.equipment_code||record?.part_name||record?.supplier_name||record?.work_order_number||record?.order_number||"this record";
+  if(!confirm(`Delete ${label}? This cannot be undone.`))return;
+  action.disabled=true;
+  const {error}=await db.from(tableName).delete().eq("id",id);
+  action.disabled=false;
+  if(error){toast("Could not delete: "+error.message);return}
+  toast("Record deleted successfully");
+  await loadAll();
+ }
+});
 
-  <div id="globalError" class="hidden" style="background:#fee2e2; color:#b91c1c; padding:12px 16px; border-radius:12px; margin-bottom:20px; font-size:13px;"></div>
-
-  <!-- Dashboard Page -->
-  <section id="page-dashboard" class="content active">
-   <div class="stats">
-    <div class="stat"><div class="stat-top">إجمالي المعدات <span class="stat-icon">▣</span></div><div class="stat-value" id="statEquipment">—</div><div class="stat-note">الأصول المسجلة</div></div>
-    <div class="stat"><div class="stat-top">سجلات الصيانة <span class="stat-icon">⚙</span></div><div class="stat-value" id="statMaintenance">—</div><div class="stat-note">عمليات الصيانة المنجزة</div></div>
-    <div class="stat"><div class="stat-top">أوامر الشغل المفتوحة <span class="stat-icon">☷</span></div><div class="stat-value" id="statWorkOrders">—</div><div class="stat-note">تتطلب المتابعة</div></div>
-    <div class="stat"><div class="stat-top">اصناف قطع الغيار <span class="stat-icon">◇</span></div><div class="stat-value" id="statParts">—</div><div class="stat-note">صنف مسجل</div></div>
-   </div>
-   <div class="grid-two">
-     <div class="panel">
-       <h3>حالة المعدات والأسطول</h3>
-       <div class="panel-sub">توزيع المعدات الحالية حسب الحالة التشغيلية</div>
-       <div class="chart-box"><canvas id="equipmentChart"></canvas></div>
-     </div>
-     <div class="panel">
-       <h3>نظرة سريعة</h3>
-       <div class="panel-sub">ملخص سريع لبيانات النظام</div>
-       <div id="quickOverview" style="display:grid; gap:16px; padding-top:6px;"></div>
-     </div>
-   </div>
-   <div class="panel">
-     <h3>أحدث المعدات المسجلة</h3>
-     <div class="panel-sub">آخر المعدات والأصول التي تم إدخالها مؤخراً</div>
-     <div class="table-wrap" id="recentEquipment"></div>
-   </div>
-  </section>
-
-  <!-- Equipment Page -->
-  <section id="page-equipment" class="content">
-    <div class="panel">
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; flex-wrap:wrap; gap:12px;">
-        <h3>سجل المعدات والأصول</h3>
-        <input class="field" id="equipmentSearch" placeholder="بحث باسم أو كود المعدة..." style="width:250px; margin:0;">
-      </div>
-      <div class="table-wrap" id="equipmentTable"></div>
-    </div>
-  </section>
-
-  <!-- Dynamic Pages Container -->
-  <section id="page-maintenance" class="content"><div class="panel"><h3>سجلات الصيانة</h3><div class="table-wrap" id="maintenanceTable"></div></div></section>
-  <section id="page-types" class="content"><div class="panel"><h3>أنواع وساعات الصيانة</h3><div class="table-wrap" id="typesTable"></div></div></section>
-  <section id="page-hours" class="content"><div class="panel"><h3>ساعات التشغيل اليومية</h3><div class="table-wrap" id="hoursTable"></div></div></section>
-  <section id="page-parts" class="content"><div class="panel"><h3>دليل قطع الغيار</h3><div class="table-wrap" id="partsTable"></div></div></section>
-  <section id="page-warehouses" class="content"><div class="panel"><h3>المستودعات والمخازن</h3><div class="table-wrap" id="warehousesTable"></div></div></section>
-  <section id="page-suppliers" class="content"><div class="panel"><h3>سجل الموردين</h3><div class="table-wrap" id="suppliersTable"></div></div></section>
-  <section id="page-stock" class="content"><div class="panel"><h3>حركات وتوريدات المخزون</h3><div class="table-wrap" id="transactionsTable"></div></div></section>
-  <section id="page-workorders" class="content"><div class="panel"><h3>أوامر الشغل والورشة</h3><div class="table-wrap" id="workOrdersTable"></div></div></section>
-  <section id="page-inspections" class="content"><div class="panel"><h3>الفحوصات الفنية والتفتيش</h3><div class="table-wrap" id="inspectionsTable"></div></div></section>
-  <section id="page-movements" class="content"><div class="panel"><h3>حركة وتجوال المعدات</h3><div class="table-wrap" id="movementsTable"></div></div></section>
-  <section id="page-schedules" class="content"><div class="panel"><h3>جداول الصيانة الوقائية</h3><div class="table-wrap" id="schedulesTable"></div></div></section>
-  <section id="page-documents" class="content"><div class="panel"><h3>وثائق ومستندات المعدات</h3><div class="table-wrap" id="documentsTable"></div></div></section>
-  <section id="page-notifications" class="content"><div class="panel"><h3>التنبيهات والإشعارات</h3><div class="table-wrap" id="notificationsTable"></div></div></section>
-  <section id="page-purchases" class="content"><div class="panel"><h3>أوامر الشراء والتوريد</h3><div class="table-wrap" id="purchasesTable"></div></div></section>
- </main>
-</div>
-
-<!-- Modal Form -->
-<div class="modal-back" id="modalBack">
-  <div class="modal">
-    <div class="modal-head">
-      <h3 id="modalTitle">إضافة سجل</h3>
-      <button class="btn btn-light" id="closeModal" style="padding:4px 10px;">✕</button>
-    </div>
-    <form id="recordForm">
-      <div id="formFields" class="form-grid"></div>
-      <div class="modal-actions">
-        <button type="button" class="btn btn-light" id="cancelModal">إلغاء</button>
-        <button type="submit" class="btn btn-primary">حفظ السجل</button>
-      </div>
+checkSession();
+</script>
+</body></html>
