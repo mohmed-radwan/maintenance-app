@@ -1,337 +1,189 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Maintenance Management</title>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Maintenance & Store Management</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial,sans-serif;background:#f4f6fa;color:#202b3c}
-header{background:#172b4d;color:#fff;padding:18px 24px;display:flex;justify-content:space-between;align-items:center;gap:12px}
-header h2{margin:0;font-size:21px}
-main{max-width:1250px;margin:25px auto;padding:0 18px}
-.card{background:#fff;padding:20px;border-radius:12px;box-shadow:0 2px 12px #172b4d0c;margin-bottom:20px}
-h3{margin:0 0 12px}
-.muted{color:#718096;font-size:13px}
-input,select,textarea{width:100%;padding:11px;border:1px solid #d8deea;border-radius:7px;margin-top:6px;font-size:14px;background:#fff}
-label{font-size:13px;font-weight:bold;color:#526078}
-.form-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:15px;margin:16px 0}
-button{border:0;border-radius:7px;padding:11px 16px;cursor:pointer;font-weight:bold}
-.primary{background:#1769aa;color:#fff}
-.secondary{background:#e7edf5;color:#25364d}
-.stat-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
-.stat-box{background:#f7f9fc;border-radius:9px;padding:16px}
-.stat{font-size:28px;font-weight:bold;color:#1769aa;margin-top:6px}
-.table-wrap{overflow-x:auto;margin-top:14px}
-table{width:100%;border-collapse:collapse;min-width:700px}
-th,td{text-align:left;padding:11px;border-bottom:1px solid #edf0f5;font-size:13px}
-th{background:#f7f9fc;color:#526078}
-.message{margin-top:10px;font-size:13px;white-space:pre-wrap}
-.error{color:#b32626}.success{color:#16803c}
-#login{max-width:430px;margin:70px auto}
-#app{display:none}
-.section-title{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
-@media(max-width:750px){.form-grid,.stat-grid{grid-template-columns:1fr}header{padding:16px}main{padding:0 12px}.card{padding:16px}}
+:root{--navy:#14243a;--blue:#2563eb;--bg:#f3f6fb;--line:#e2e8f0;--text:#172033;--muted:#64748b;--green:#15803d;--red:#b91c1c;--amber:#b45309}
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:var(--bg);color:var(--text)}
+header{background:var(--navy);color:#fff;padding:16px 22px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+header h1{font-size:20px;margin:0}header small{color:#cbd5e1}
+#login{max-width:420px;margin:8vh auto;background:#fff;padding:28px;border-radius:14px;box-shadow:0 8px 30px #0f172a12}
+#login h2{margin-top:0}.shell{display:none;max-width:1500px;margin:auto;padding:18px}
+.nav{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.nav button{background:#fff;color:#334155;border:1px solid var(--line);padding:10px 13px;border-radius:8px;cursor:pointer}
+.nav button.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.page{display:none}.page.active{display:block}.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px;margin-bottom:18px}
+.card,.panel{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px}
+.card .num{font-size:28px;font-weight:700;margin-top:8px}.muted{color:var(--muted);font-size:13px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px}
+label{display:block;font-size:13px;font-weight:700;margin:10px 0 5px}
+input,select,textarea{width:100%;padding:10px;border:1px solid #cbd5e1;border-radius:7px;background:#fff;font:inherit}
+textarea{min-height:70px;resize:vertical}button.primary{background:var(--blue);color:#fff;border:0;padding:10px 15px;border-radius:7px;cursor:pointer;margin-top:12px}
+button.secondary{background:#e2e8f0;color:#1e293b;border:0;padding:9px 12px;border-radius:7px;cursor:pointer}
+button.danger{background:#fee2e2;color:#991b1b;border:0;padding:9px 12px;border-radius:7px;cursor:pointer}
+.actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.panel{margin-bottom:16px}.panel h2{margin:0 0 12px;font-size:18px}
+.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:650px}th,td{text-align:left;padding:10px;border-bottom:1px solid var(--line);font-size:13px}th{background:#f8fafc;color:#475569}
+.badge{display:inline-block;padding:4px 8px;border-radius:20px;background:#e2e8f0;font-size:12px}.badge.red{background:#fee2e2;color:#991b1b}.badge.green{background:#dcfce7;color:#166534}.badge.amber{background:#fef3c7;color:#92400e}
+.msg{padding:10px;border-radius:8px;margin:12px 0;display:none}.msg.ok{display:block;background:#dcfce7;color:#166534}.msg.err{display:block;background:#fee2e2;color:#991b1b}
+h2.section{margin:8px 0 14px}.hint{background:#eff6ff;padding:12px;border-radius:8px;color:#1e40af;font-size:13px;margin-bottom:14px}
+@media(max-width:600px){.shell{padding:10px}header{padding:14px}.nav button{flex:1}}
 </style>
 </head>
 <body>
-<header>
-  <h2>Maintenance Management</h2>
-  <button id="logout" class="secondary" style="display:none" onclick="logout()">Sign Out</button>
-</header>
+<header><div><h1>Maintenance & Store Management</h1><small>Equipment • Inventory • Work Orders</small></div><button id="logout" class="secondary" style="display:none" onclick="logout()">Logout</button></header>
 
-<section id="login" class="card">
-  <h3>Admin Login</h3>
-  <p class="muted">Sign in to access your maintenance system.</p>
-  <label>Email</label>
-  <input id="email" type="email" placeholder="Your email" autocomplete="username">
-  <label style="display:block;margin-top:14px">Password</label>
-  <input id="password" type="password" placeholder="Your password" autocomplete="current-password">
-  <button class="primary" style="width:100%;margin-top:18px" onclick="login()">Login</button>
-  <div id="loginMessage" class="message"></div>
+<section id="login">
+<h2>Admin Login</h2><p class="muted">Sign in using your Supabase account.</p>
+<div id="loginMsg" class="msg"></div>
+<label>Email</label><input id="email" type="email" autocomplete="username" placeholder="admin@example.com">
+<label>Password</label><input id="password" type="password" autocomplete="current-password" placeholder="Password">
+<button class="primary" style="width:100%" onclick="login()">Sign In</button>
 </section>
 
-<div id="app">
-<main>
-  <section class="card">
-    <h3>Dashboard</h3>
-    <div class="stat-grid">
-      <div class="stat-box"><div class="muted">Total Equipment</div><div class="stat" id="totalEquipment">0</div></div>
-      <div class="stat-box"><div class="muted">Maintenance Types</div><div class="stat" id="totalTypes">0</div></div>
-      <div class="stat-box"><div class="muted">Maintenance Records</div><div class="stat" id="totalRecords">0</div></div>
-    </div>
-  </section>
+<main id="app" class="shell">
+<div id="globalMsg" class="msg"></div>
+<nav class="nav">
+<button class="active" data-page="dashboard" onclick="showPage('dashboard',this)">Dashboard</button>
+<button data-page="equipment" onclick="showPage('equipment',this)">Equipment</button>
+<button data-page="warehouses" onclick="showPage('warehouses',this)">Warehouses</button>
+<button data-page="suppliers" onclick="showPage('suppliers',this)">Suppliers</button>
+<button data-page="parts" onclick="showPage('parts',this)">Spare Parts</button>
+<button data-page="stock" onclick="showPage('stock',this)">Stock Movement</button>
+<button data-page="workorders" onclick="showPage('workorders',this)">Work Orders</button>
+<button data-page="maintenance" onclick="showPage('maintenance',this)">Maintenance</button>
+<button data-page="reports" onclick="showPage('reports',this)">Equipment Reports</button>
+</nav>
 
-  <section class="card">
-    <h3>Equipment</h3>
-    <p class="muted">Register a generator, machine or vehicle.</p>
-    <div class="form-grid">
-      <div><label>Equipment Code *</label><input id="code" placeholder="e.g. GEN-001"></div>
-      <div><label>Equipment Model *</label><input id="model" placeholder="e.g. Caterpillar Generator"></div>
-      <div><label>Serial Number</label><input id="serial" placeholder="Serial number"></div>
-      <div><label>Project</label><input id="project" placeholder="Project name"></div>
-      <div><label>Current Location</label><input id="location" placeholder="Equipment location"></div>
-      <div><label>Current Operating Hours</label><input id="hours" type="number" min="0" step="0.1" value="0"></div>
-      <div><label>Last Maintenance Date</label><input id="lastDate" type="date"></div>
-      <div><label>Next Maintenance Due Hours</label><input id="nextDue" type="number" min="0" step="0.1" placeholder="e.g. 500"></div>
-      <div><label>Status</label><select id="status"><option>Active</option><option>Under Maintenance</option><option>Out of Service</option></select></div>
-      <div style="grid-column:1/-1"><label>Notes</label><textarea id="notes" rows="2" placeholder="Additional information"></textarea></div>
-    </div>
-    <button class="primary" onclick="addEquipment()">Save Equipment</button>
-    <button class="secondary" onclick="clearEquipmentForm()">Clear Form</button>
-    <div id="equipmentMessage" class="message"></div>
-    <div class="section-title" style="margin-top:22px">
-      <h3>Equipment List</h3>
-      <button class="secondary" onclick="loadEquipment()">Refresh</button>
-    </div>
-    <input id="searchEquipment" placeholder="Search by code, model, serial number or project..." oninput="renderEquipment()">
-    <div class="table-wrap"><table>
-      <thead><tr><th>Code</th><th>Model</th><th>Serial Number</th><th>Project</th><th>Location</th><th>Operating Hours</th><th>Status</th></tr></thead>
-      <tbody id="equipmentRows"><tr><td colspan="7">No equipment found.</td></tr></tbody>
-    </table></div>
-    <div id="equipmentListMessage" class="message muted"></div>
-  </section>
-
-  <section class="card">
-    <h3>Maintenance Types</h3>
-    <p class="muted">Set preventive maintenance intervals.</p>
-    <div class="form-grid">
-      <div><label>Maintenance Name *</label><input id="maintenanceName" placeholder="e.g. Engine Oil Change"></div>
-      <div><label>Interval Hours *</label><input id="maintenanceInterval" type="number" min="1" placeholder="e.g. 250"></div>
-      <div><label>Description</label><input id="maintenanceDescription" placeholder="Maintenance details"></div>
-    </div>
-    <button class="primary" onclick="addMaintenanceType()">Save Maintenance Type</button>
-    <div id="maintenanceMessage" class="message"></div>
-    <div class="table-wrap"><table>
-      <thead><tr><th>Maintenance Name</th><th>Interval Hours</th><th>Description</th></tr></thead>
-      <tbody id="maintenanceRows"><tr><td colspan="3">No maintenance types found.</td></tr></tbody>
-    </table></div>
-  </section>
-
-  <section class="card">
-    <h3>Maintenance Records</h3>
-    <p class="muted">Record completed maintenance work.</p>
-    <div class="form-grid">
-      <div><label>Equipment *</label><select id="recordEquipment"><option value="">Select Equipment</option></select></div>
-      <div><label>Maintenance Type *</label><select id="recordType"><option value="">Select Maintenance Type</option></select></div>
-      <div><label>Maintenance Date *</label><input type="date" id="recordDate"></div>
-      <div><label>Operating Hours *</label><input type="number" id="recordHours" min="0" step="0.1" placeholder="Operating hours"></div>
-      <div><label>Maintenance Description</label><input id="recordDescription" placeholder="Work performed"></div>
-      <div><label>Parts Replaced</label><input id="recordParts" placeholder="Parts used"></div>
-      <div><label>Labor Cost</label><input type="number" id="recordLabor" min="0" step="0.01" value="0"></div>
-      <div><label>Spare Parts Cost</label><input type="number" id="recordPartsCost" min="0" step="0.01" value="0"></div>
-      <div><label>Next Due Hours</label><input type="number" id="recordNextDue" min="0" step="0.1" placeholder="Next service hour meter"></div>
-      <div><label>Performed By</label><input id="recordPerformedBy" placeholder="Technician name"></div>
-      <div style="grid-column:1/-1"><label>Remarks</label><textarea id="recordRemarks" rows="2" placeholder="Additional remarks"></textarea></div>
-    </div>
-    <button class="primary" onclick="addMaintenanceRecord()">Save Maintenance Record</button>
-    <div id="recordMessage" class="message"></div>
-    <div class="section-title" style="margin-top:22px">
-      <h3>Maintenance History</h3>
-      <button class="secondary" onclick="loadMaintenanceRecords()">Refresh</button>
-    </div>
-    <div class="table-wrap"><table>
-      <thead><tr><th>Date</th><th>Equipment</th><th>Maintenance Type</th><th>Hours</th><th>Description</th><th>Total Cost</th><th>Next Due</th></tr></thead>
-      <tbody id="recordRows"><tr><td colspan="7">No maintenance records found.</td></tr></tbody>
-    </table></div>
-  </section>
-</main>
+<section id="dashboard" class="page active">
+<h2 class="section">Dashboard</h2>
+<div class="cards">
+<div class="card">Total Equipment<div class="num" id="dEquipment">0</div></div>
+<div class="card">Spare Part Items<div class="num" id="dParts">0</div></div>
+<div class="card">Open Work Orders<div class="num" id="dWork">0</div></div>
+<div class="card">Low Stock Alerts<div class="num" id="dAlerts">0</div></div>
+<div class="card">Maintenance Records<div class="num" id="dMaint">0</div></div>
 </div>
+<div class="panel"><h2>Low Stock Alerts</h2><div id="dashAlerts" class="tablewrap">Loading...</div></div>
+<div class="panel"><h2>Recent Stock Movements</h2><div id="recentStock" class="tablewrap">Loading...</div></div>
+</section>
+
+<section id="equipment" class="page">
+<h2 class="section">Equipment</h2>
+<div class="panel"><h2>Register Equipment</h2><div class="grid">
+<div><label>Equipment Code *</label><input id="eq_code" required></div>
+<div><label>Equipment Model *</label><input id="eq_model" required></div>
+<div><label>Serial Number</label><input id="eq_serial"></div>
+<div><label>Project</label><input id="eq_project"></div>
+<div><label>Current Location</label><input id="eq_location"></div>
+<div><label>Current Operating Hours</label><input id="eq_hours" type="number" min="0" value="0"></div>
+<div><label>Last Maintenance Date</label><input id="eq_last" type="date"></div>
+<div><label>Next Maintenance Due Hours</label><input id="eq_due" type="number" min="0"></div>
+<div><label>Status</label><select id="eq_status"><option>Active</option><option>Under Maintenance</option><option>Out of Service</option></select></div>
+<div><label>Notes</label><input id="eq_notes"></div>
+</div><button class="primary" onclick="addEquipment()">Save Equipment</button></div>
+<div class="panel"><div class="actions"><h2 style="margin-right:auto">Equipment List</h2><button class="secondary" onclick="loadEquipment()">Refresh</button></div><div id="equipmentTable" class="tablewrap"></div></div>
+</section>
+
+<section id="warehouses" class="page">
+<h2 class="section">Warehouses</h2>
+<div class="panel"><h2>Add Warehouse</h2><div class="grid">
+<div><label>Warehouse Code *</label><input id="wh_code"></div><div><label>Warehouse Name *</label><input id="wh_name"></div><div><label>Location</label><input id="wh_location"></div><div><label>Notes</label><input id="wh_notes"></div>
+</div><button class="primary" onclick="addWarehouse()">Save Warehouse</button></div>
+<div class="panel"><h2>Warehouse List</h2><div id="warehouseTable" class="tablewrap"></div></div>
+</section>
+
+<section id="suppliers" class="page">
+<h2 class="section">Suppliers</h2>
+<div class="panel"><h2>Add Supplier</h2><div class="grid">
+<div><label>Supplier Code</label><input id="sup_code"></div><div><label>Supplier Name *</label><input id="sup_name"></div><div><label>Contact Person</label><input id="sup_contact"></div><div><label>Phone</label><input id="sup_phone"></div><div><label>Email</label><input id="sup_email" type="email"></div><div><label>Address</label><input id="sup_address"></div>
+</div><button class="primary" onclick="addSupplier()">Save Supplier</button></div>
+<div class="panel"><h2>Supplier List</h2><div id="supplierTable" class="tablewrap"></div></div>
+</section>
+
+<section id="parts" class="page">
+<h2 class="section">Spare Parts</h2>
+<div class="panel"><h2>Add Spare Part</h2><div class="grid">
+<div><label>Part Code *</label><input id="part_code"></div><div><label>Part Name *</label><input id="part_name"></div><div><label>Category</label><input id="part_category"></div><div><label>Unit</label><select id="part_unit"><option>Piece</option><option>Liter</option><option>Set</option><option>Meter</option><option>Kg</option><option>Box</option></select></div><div><label>Supplier</label><select id="part_supplier"></select></div><div><label>Purchase Price</label><input id="part_price" type="number" min="0" step="0.01" value="0"></div><div><label>Minimum Stock Alert</label><input id="part_min" type="number" min="0" step="0.01" value="0"></div>
+</div><button class="primary" onclick="addPart()">Save Spare Part</button></div>
+<div class="panel"><h2>Spare Parts & Current Balances</h2><div id="partsTable" class="tablewrap"></div></div>
+</section>
+
+<section id="stock" class="page">
+<h2 class="section">Stock Movement</h2><div class="hint">Receipt adds stock. Issue deducts stock and can be linked to an equipment and work order. Return adds stock back. The database checks available quantity.</div>
+<div class="panel"><h2>Record Stock Movement</h2><div class="grid">
+<div><label>Movement Type *</label><select id="st_type"><option value="Receipt">Receipt (استلام)</option><option value="Issue">Issue (صرف)</option><option value="Return">Return (مرتجع)</option><option value="Adjustment">Adjustment (تسوية رصيد)</option></select></div>
+<div><label>Warehouse *</label><select id="st_wh"></select></div><div><label>Spare Part *</label><select id="st_part"></select></div><div><label>Quantity *</label><input id="st_qty" type="number" min="0.01" step="0.01"></div>
+<div><label>Unit Price</label><input id="st_price" type="number" min="0" step="0.01" value="0"></div><div><label>Supplier (for receipt)</label><select id="st_supplier"></select></div><div><label>Equipment (for issue)</label><select id="st_equipment"></select></div><div><label>Work Order</label><select id="st_work"></select></div>
+<div><label>Reference Number</label><input id="st_ref"></div><div><label>Notes</label><input id="st_notes"></div>
+</div><button class="primary" onclick="addStockMovement()">Save Movement</button></div>
+<div class="panel"><h2>Stock Movement History</h2><div id="stockTable" class="tablewrap"></div></div>
+</section>
+
+<section id="workorders" class="page">
+<h2 class="section">Work Orders</h2>
+<div class="panel"><h2>Create Work Order</h2><div class="grid">
+<div><label>Work Order Number *</label><input id="wo_number" placeholder="WO-0001"></div><div><label>Equipment *</label><select id="wo_equipment"></select></div><div><label>Title *</label><input id="wo_title"></div><div><label>Priority</label><select id="wo_priority"><option>Normal</option><option>Low</option><option>High</option><option>Urgent</option></select></div>
+<div><label>Status</label><select id="wo_status"><option>Open</option><option>In Progress</option><option>Waiting for Parts</option><option>Completed</option><option>Cancelled</option></select></div><div><label>Assigned To</label><input id="wo_assigned"></div><div><label>Labor Cost</label><input id="wo_labor" type="number" min="0" value="0"></div><div><label>Description</label><input id="wo_desc"></div><div><label>Notes</label><input id="wo_notes"></div>
+</div><button class="primary" onclick="addWorkOrder()">Save Work Order</button></div>
+<div class="panel"><h2>Work Order List</h2><div id="workTable" class="tablewrap"></div></div>
+</section>
+
+<section id="maintenance" class="page">
+<h2 class="section">Maintenance</h2>
+<div class="panel"><h2>Maintenance Types</h2><div class="grid"><div><label>Maintenance Name *</label><input id="mt_name"></div><div><label>Interval Hours *</label><input id="mt_interval" type="number" min="1"></div><div><label>Description</label><input id="mt_desc"></div></div><button class="primary" onclick="addMaintenanceType()">Save Maintenance Type</button><div id="typesTable" class="tablewrap" style="margin-top:14px"></div></div>
+<div class="panel"><h2>Record Maintenance</h2><div class="grid">
+<div><label>Equipment *</label><select id="mr_equipment"></select></div><div><label>Maintenance Type *</label><select id="mr_type"></select></div><div><label>Date *</label><input id="mr_date" type="date"></div><div><label>Operating Hours *</label><input id="mr_hours" type="number" min="0"></div><div><label>Description</label><input id="mr_desc"></div><div><label>Parts Replaced</label><input id="mr_parts"></div><div><label>Labor Cost</label><input id="mr_labor" type="number" min="0" value="0"></div><div><label>Spare Parts Cost</label><input id="mr_cost" type="number" min="0" value="0"></div><div><label>Next Due Hours</label><input id="mr_next" type="number" min="0"></div><div><label>Performed By</label><input id="mr_by"></div><div><label>Remarks</label><input id="mr_remarks"></div>
+</div><button class="primary" onclick="addMaintenanceRecord()">Save Maintenance Record</button></div>
+<div class="panel"><h2>Maintenance History</h2><div id="maintenanceTable" class="tablewrap"></div></div>
+</section>
+
+<section id="reports" class="page">
+<h2 class="section">Equipment Reports</h2><div class="panel"><label>Select Equipment</label><select id="report_equipment" onchange="loadEquipmentReport()"></select><div id="equipmentReport" style="margin-top:15px">Choose equipment to view its parts consumption and maintenance history.</div></div>
+</section>
+</main>
 
 <script>
 const SUPABASE_URL = "https://arayncqksyddiygkbjzg.supabase.co";
 const SUPABASE_KEY = "sb_publishable_FueLZy87Cb5FPnC6I1tDjw_kI2gDPn8";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let equipment=[], warehouses=[], suppliers=[], parts=[], workOrders=[], maintenanceTypes=[];
 
-let equipmentList = [];
-let maintenanceTypes = [];
-let maintenanceRecords = [];
-
-function safe(value){
-  return String(value ?? "").replace(/[&<>"']/g, char => ({
-    "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"
-  })[char]);
-}
-function setMessage(id, text, kind="error"){
-  const el = document.getElementById(id);
-  el.textContent = text;
-  el.className = "message " + (kind === "success" ? "success" : kind === "muted" ? "muted" : "error");
-}
-async function login(){
-  const email = document.getElementById("email").value.trim();
-  const password = document.getElementById("password").value;
-  if(!email || !password){ setMessage("loginMessage","Enter your email and password."); return; }
-  setMessage("loginMessage","Signing in...","muted");
-  const {error} = await db.auth.signInWithPassword({email,password});
-  if(error){ setMessage("loginMessage",error.message); return; }
-  await showApp();
-}
-async function logout(){
-  await db.auth.signOut();
-  document.getElementById("app").style.display = "none";
-  document.getElementById("login").style.display = "block";
-  document.getElementById("logout").style.display = "none";
-}
-async function showApp(){
-  document.getElementById("login").style.display = "none";
-  document.getElementById("app").style.display = "block";
-  document.getElementById("logout").style.display = "inline-block";
-  await Promise.all([loadEquipment(),loadMaintenanceTypes(),loadMaintenanceRecords()]);
-}
-async function loadEquipment(){
-  setMessage("equipmentListMessage","Loading equipment...","muted");
-  const {data,error} = await db.from("equipment").select("*").order("created_at",{ascending:false});
-  if(error){ setMessage("equipmentListMessage","Error loading equipment: "+error.message); return; }
-  equipmentList = data || [];
-  document.getElementById("totalEquipment").textContent = equipmentList.length;
-  renderEquipment();
-  populateRecordEquipment();
-  setMessage("equipmentListMessage",equipmentList.length+" equipment records found.","muted");
-}
-function renderEquipment(){
-  const search = (document.getElementById("searchEquipment")?.value || "").toLowerCase();
-  const filtered = equipmentList.filter(item =>
-    [item.equipment_code,item.equipment_model,item.serial_number,item.project]
-      .some(value => String(value || "").toLowerCase().includes(search))
-  );
-  document.getElementById("equipmentRows").innerHTML = filtered.length ? filtered.map(item => `
-    <tr><td>${safe(item.equipment_code)}</td><td>${safe(item.equipment_model)}</td>
-    <td>${safe(item.serial_number)}</td><td>${safe(item.project)}</td>
-    <td>${safe(item.current_location)}</td><td>${safe(item.current_operating_hours)}</td>
-    <td>${safe(item.status)}</td></tr>`).join("") : '<tr><td colspan="7">No matching equipment found.</td></tr>';
-}
-async function addEquipment(){
-  const code = document.getElementById("code").value.trim();
-  const model = document.getElementById("model").value.trim();
-  const hours = document.getElementById("hours").value;
-  if(!code || !model){ setMessage("equipmentMessage","Equipment Code and Equipment Model are required."); return; }
-  if(hours !== "" && Number(hours) < 0){ setMessage("equipmentMessage","Operating hours cannot be negative."); return; }
-  const record = {
-    equipment_code:code, equipment_model:model,
-    serial_number:document.getElementById("serial").value.trim() || null,
-    project:document.getElementById("project").value.trim() || null,
-    current_location:document.getElementById("location").value.trim() || null,
-    current_operating_hours:hours === "" ? 0 : Number(hours),
-    last_maintenance_date:document.getElementById("lastDate").value || null,
-    next_maintenance_due_hours:document.getElementById("nextDue").value === "" ? null : Number(document.getElementById("nextDue").value),
-    status:document.getElementById("status").value,
-    notes:document.getElementById("notes").value.trim() || null
-  };
-  setMessage("equipmentMessage","Saving...","muted");
-  const {error} = await db.from("equipment").insert(record);
-  if(error){ setMessage("equipmentMessage","Error: "+error.message); return; }
-  setMessage("equipmentMessage","Equipment saved successfully.","success");
-  clearEquipmentForm();
-  await loadEquipment();
-}
-function clearEquipmentForm(){
-  ["code","model","serial","project","location","lastDate","nextDue","notes"].forEach(id => document.getElementById(id).value = "");
-  document.getElementById("hours").value = "0";
-  document.getElementById("status").value = "Active";
-}
-async function loadMaintenanceTypes(){
-  const {data,error} = await db.from("maintenance_types").select("*").order("maintenance_name");
-  if(error){ setMessage("maintenanceMessage","Error loading maintenance types: "+error.message); return; }
-  maintenanceTypes = data || [];
-  document.getElementById("totalTypes").textContent = maintenanceTypes.length;
-  document.getElementById("maintenanceRows").innerHTML = maintenanceTypes.length ? maintenanceTypes.map(item => `
-    <tr><td>${safe(item.maintenance_name)}</td><td>${safe(item.interval_hours)}</td><td>${safe(item.description)}</td></tr>`).join("") :
-    '<tr><td colspan="3">No maintenance types found. Add one using the form above.</td></tr>';
-  populateRecordTypes();
-}
-async function addMaintenanceType(){
-  const name = document.getElementById("maintenanceName").value.trim();
-  const interval = document.getElementById("maintenanceInterval").value;
-  const description = document.getElementById("maintenanceDescription").value.trim();
-  if(!name || !interval || Number(interval) <= 0){ setMessage("maintenanceMessage","Enter a maintenance name and a valid interval."); return; }
-  setMessage("maintenanceMessage","Saving...","muted");
-  const {error} = await db.from("maintenance_types").insert({
-    maintenance_name:name, interval_hours:Number(interval), description:description || null
-  });
-  if(error){ setMessage("maintenanceMessage","Error: "+error.message); return; }
-  document.getElementById("maintenanceName").value = "";
-  document.getElementById("maintenanceInterval").value = "";
-  document.getElementById("maintenanceDescription").value = "";
-  setMessage("maintenanceMessage","Maintenance type saved successfully.","success");
-  await loadMaintenanceTypes();
-}
-function populateRecordEquipment(){
-  const select = document.getElementById("recordEquipment");
-  const current = select.value;
-  select.innerHTML = '<option value="">Select Equipment</option>' + equipmentList.map(item =>
-    `<option value="${safe(item.id)}">${safe(item.equipment_code)} - ${safe(item.equipment_model)}</option>`
-  ).join("");
-  if(equipmentList.some(item => item.id === current)) select.value = current;
-}
-function populateRecordTypes(){
-  const select = document.getElementById("recordType");
-  const current = select.value;
-  select.innerHTML = '<option value="">Select Maintenance Type</option>' + maintenanceTypes.map(item =>
-    `<option value="${safe(item.id)}">${safe(item.maintenance_name)}</option>`
-  ).join("");
-  if(maintenanceTypes.some(item => item.id === current)) select.value = current;
-}
-async function addMaintenanceRecord(){
-  const equipmentId = document.getElementById("recordEquipment").value;
-  const typeId = document.getElementById("recordType").value;
-  const date = document.getElementById("recordDate").value;
-  const hours = document.getElementById("recordHours").value;
-  if(!equipmentId || !typeId || !date || hours === ""){ setMessage("recordMessage","Select equipment, maintenance type, date and operating hours."); return; }
-  if(Number(hours) < 0){ setMessage("recordMessage","Operating hours cannot be negative."); return; }
-  const labor = Number(document.getElementById("recordLabor").value || 0);
-  const partsCost = Number(document.getElementById("recordPartsCost").value || 0);
-  const payload = {
-    equipment_id:equipmentId, maintenance_type_id:typeId, maintenance_date:date,
-    operating_hours:Number(hours),
-    maintenance_description:document.getElementById("recordDescription").value.trim() || null,
-    parts_replaced:document.getElementById("recordParts").value.trim() || null,
-    labor_cost:labor, spare_parts_cost:partsCost, total_cost:labor+partsCost,
-    next_due_hours:document.getElementById("recordNextDue").value === "" ? null : Number(document.getElementById("recordNextDue").value),
-    performed_by:document.getElementById("recordPerformedBy").value.trim() || null,
-    remarks:document.getElementById("recordRemarks").value.trim() || null
-  };
-  setMessage("recordMessage","Saving...","muted");
-  const {error} = await db.from("maintenance_records").insert(payload);
-  if(error){ setMessage("recordMessage","Error: "+error.message); return; }
-  ["recordDate","recordHours","recordDescription","recordParts","recordNextDue","recordPerformedBy","recordRemarks"].forEach(id => document.getElementById(id).value = "");
-  document.getElementById("recordLabor").value = "0";
-  document.getElementById("recordPartsCost").value = "0";
-  setMessage("recordMessage","Maintenance record saved successfully.","success");
-  await loadMaintenanceRecords();
-}
-async function loadMaintenanceRecords(){
-  const {data,error} = await db.from("maintenance_records").select("*").order("maintenance_date",{ascending:false});
-  if(error){ setMessage("recordMessage","Error loading maintenance records: "+error.message); return; }
-  maintenanceRecords = data || [];
-  document.getElementById("totalRecords").textContent = maintenanceRecords.length;
-  renderMaintenanceRecords();
-}
-function renderMaintenanceRecords(){
-  const equipmentById = Object.fromEntries(equipmentList.map(item => [item.id,item]));
-  const typesById = Object.fromEntries(maintenanceTypes.map(item => [item.id,item]));
-  const rows = maintenanceRecords.map(item => {
-    const equipment = equipmentById[item.equipment_id];
-    const type = typesById[item.maintenance_type_id];
-    return `<tr><td>${safe(item.maintenance_date)}</td>
-      <td>${safe(equipment ? equipment.equipment_code : item.equipment_id)}</td>
-      <td>${safe(type ? type.maintenance_name : item.maintenance_type_id)}</td>
-      <td>${safe(item.operating_hours)}</td><td>${safe(item.maintenance_description)}</td>
-      <td>${safe(item.total_cost)}</td><td>${safe(item.next_due_hours)}</td></tr>`;
-  }).join("");
-  document.getElementById("recordRows").innerHTML = rows || '<tr><td colspan="7">No maintenance records found.</td></tr>';
-}
-db.auth.getSession().then(({data,error}) => {
-  if(error) return;
-  if(data.session) showApp();
-});
-db.auth.onAuthStateChange((event,session) => {
-  if(event === "SIGNED_OUT"){
-    document.getElementById("app").style.display = "none";
-    document.getElementById("login").style.display = "block";
-    document.getElementById("logout").style.display = "none";
-  }
-});
+function el(id){return document.getElementById(id)}
+function val(id){return el(id).value.trim()}
+function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function showMsg(message,ok=true){const m=el('globalMsg');m.textContent=message;m.className='msg '+(ok?'ok':'err');window.scrollTo({top:0,behavior:'smooth'});setTimeout(()=>m.className='msg',5000)}
+function loginMsg(message,ok=false){const m=el('loginMsg');m.textContent=message;m.className='msg '+(ok?'ok':'err')}
+async function login(){const {data,error}=await db.auth.signInWithPassword({email:val('email'),password:el('password').value});if(error){loginMsg(error.message);return}showApp()}
+async function logout(){await db.auth.signOut();el('app').style.display='none';el('login').style.display='block';el('logout').style.display='none'}
+async function showApp(){el('login').style.display='none';el('app').style.display='block';el('logout').style.display='inline-block';await refreshAll()}
+function showPage(id,btn){document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));el(id).classList.add('active');document.querySelectorAll('.nav button').forEach(b=>b.classList.remove('active'));btn.classList.add('active')}
+function options(selectId,rows,labelFn,empty='Select'){el(selectId).innerHTML='<option value="">'+empty+'</option>'+rows.map(r=>`<option value="${r.id}">${escapeHtml(labelFn(r))}</option>`).join('')}
+function table(headers,rows){if(!rows.length)return '<p class="muted">No records found.</p>';return '<table><thead><tr>'+headers.map(h=>'<th>'+h+'</th>').join('')+'</tr></thead><tbody>'+rows.join('')+'</tbody></table>'}
+async function getRows(tableName,columns='*',order='created_at',ascending=false){const q=db.from(tableName).select(columns);if(order)q.order(order,{ascending});const {data,error}=await q;if(error)throw error;return data||[]}
+async function refreshAll(){try{await Promise.all([loadEquipment(),loadWarehouses(),loadSuppliers(),loadParts(),loadWorkOrders(),loadMaintenanceTypes(),loadMaintenanceRecords(),loadStock(),loadDashboard()])}catch(e){showMsg(e.message,false)}}
+async function addEquipment(){try{if(!val('eq_code')||!val('eq_model'))throw Error('Equipment Code and Model are required');const {error}=await db.from('equipment').insert({equipment_code:val('eq_code'),equipment_model:val('eq_model'),serial_number:val('eq_serial')||null,project:val('eq_project')||null,current_location:val('eq_location')||null,current_operating_hours:Number(val('eq_hours')||0),last_maintenance_date:val('eq_last')||null,next_maintenance_due_hours:Number(val('eq_due'))||null,status:val('eq_status'),notes:val('eq_notes')||null});if(error)throw error;showMsg('Equipment saved successfully');['eq_code','eq_model','eq_serial','eq_project','eq_location','eq_last','eq_due','eq_notes'].forEach(x=>el(x).value='');await loadEquipment();await loadDashboard()}catch(e){showMsg(e.message,false)}}
+async function loadEquipment(){equipment=await getRows('equipment','*','equipment_code',true);el('equipmentTable').innerHTML=table(['Code','Model','Serial','Project','Location','Hours','Status'],equipment.map(x=>`<tr><td>${escapeHtml(x.equipment_code)}</td><td>${escapeHtml(x.equipment_model)}</td><td>${escapeHtml(x.serial_number)}</td><td>${escapeHtml(x.project)}</td><td>${escapeHtml(x.current_location)}</td><td>${x.current_operating_hours??0}</td><td>${escapeHtml(x.status)}</td></tr>`));['st_equipment','wo_equipment','mr_equipment','report_equipment'].forEach(id=>options(id,equipment,x=>`${x.equipment_code} - ${x.equipment_model}`,'Select Equipment'))}
+async function addWarehouse(){try{if(!val('wh_code')||!val('wh_name'))throw Error('Warehouse code and name are required');const {error}=await db.from('warehouses').insert({warehouse_code:val('wh_code'),warehouse_name:val('wh_name'),location:val('wh_location'),notes:val('wh_notes')});if(error)throw error;showMsg('Warehouse saved');await loadWarehouses()}catch(e){showMsg(e.message,false)}}
+async function loadWarehouses(){warehouses=await getRows('warehouses','*','warehouse_name',true);el('warehouseTable').innerHTML=table(['Code','Warehouse','Location'],warehouses.map(x=>`<tr><td>${escapeHtml(x.warehouse_code)}</td><td>${escapeHtml(x.warehouse_name)}</td><td>${escapeHtml(x.location)}</td></tr>`));options('st_wh',warehouses,x=>x.warehouse_name,'Select Warehouse')}
+async function addSupplier(){try{if(!val('sup_name'))throw Error('Supplier name is required');const {error}=await db.from('suppliers').insert({supplier_code:val('sup_code')||null,supplier_name:val('sup_name'),contact_person:val('sup_contact'),phone:val('sup_phone'),email:val('sup_email'),address:val('sup_address')});if(error)throw error;showMsg('Supplier saved');await loadSuppliers()}catch(e){showMsg(e.message,false)}}
+async function loadSuppliers(){suppliers=await getRows('suppliers','*','supplier_name',true);el('supplierTable').innerHTML=table(['Code','Supplier','Contact','Phone','Email','Address'],suppliers.map(x=>`<tr><td>${escapeHtml(x.supplier_code)}</td><td>${escapeHtml(x.supplier_name)}</td><td>${escapeHtml(x.contact_person)}</td><td>${escapeHtml(x.phone)}</td><td>${escapeHtml(x.email)}</td><td>${escapeHtml(x.address)}</td></tr>`));options('part_supplier',suppliers,x=>x.supplier_name);options('st_supplier',suppliers,x=>x.supplier_name)}
+async function addPart(){try{if(!val('part_code')||!val('part_name'))throw Error('Part code and name are required');const {error}=await db.from('spare_parts').insert({part_code:val('part_code'),part_name:val('part_name'),category:val('part_category'),unit:val('part_unit'),supplier_id:val('part_supplier')||null,purchase_price:Number(val('part_price')||0),minimum_stock:Number(val('part_min')||0)});if(error)throw error;showMsg('Spare part saved. Add an opening stock receipt from Stock Movement.');await loadParts();await loadDashboard()}catch(e){showMsg(e.message,false)}}
+async function loadParts(){const {data,error}=await db.from('spare_parts').select('*,suppliers(supplier_name)').order('part_name');if(error)throw error;parts=data||[];const {data:balances,error:be}=await db.from('stock_balances').select('*,warehouses(warehouse_name)');if(be)throw be;const totalByPart={};(balances||[]).forEach(b=>totalByPart[b.spare_part_id]=(totalByPart[b.spare_part_id]||0)+Number(b.quantity));el('partsTable').innerHTML=table(['Code','Part Name','Category','Unit','Supplier','Purchase Price','Min. Stock','Current Balance'],parts.map(p=>`<tr><td>${escapeHtml(p.part_code)}</td><td>${escapeHtml(p.part_name)}</td><td>${escapeHtml(p.category)}</td><td>${escapeHtml(p.unit)}</td><td>${escapeHtml(p.suppliers?.supplier_name)}</td><td>${Number(p.purchase_price||0).toFixed(2)}</td><td>${p.minimum_stock}</td><td>${totalByPart[p.id]||0}</td></tr>`));options('st_part',parts,p=>`${p.part_code} - ${p.part_name}`,'Select Spare Part')}
+async function addStockMovement(){try{const wh=val('st_wh'),part=val('st_part'),qty=Number(val('st_qty'));if(!wh||!part||!qty||qty<=0)throw Error('Warehouse, spare part and a quantity greater than zero are required');const type=val('st_type');if(type==='Adjustment'&& !confirm('Adjustment sets the stock balance to the entered quantity. Continue?'))return;const {error}=await db.from('stock_transactions').insert({warehouse_id:wh,spare_part_id:part,equipment_id:val('st_equipment')||null,work_order_id:val('st_work')||null,supplier_id:val('st_supplier')||null,transaction_type:type,quantity:qty,unit_price:Number(val('st_price')||0),reference_number:val('st_ref')||null,notes:val('st_notes')||null});if(error)throw error;showMsg('Stock movement saved and balance updated');el('st_qty').value='';el('st_ref').value='';el('st_notes').value='';await loadParts();await loadStock();await loadDashboard()}catch(e){showMsg(e.message,false)}}
+async function loadStock(){const {data,error}=await db.from('stock_transactions').select('*,warehouses(warehouse_name),spare_parts(part_code,part_name),equipment(equipment_code),work_orders(work_order_number)').order('transaction_date',{ascending:false}).limit(100);if(error)throw error;el('stockTable').innerHTML=table(['Date','Type','Warehouse','Part','Qty','Unit Price','Equipment','Work Order','Reference'],(data||[]).map(x=>`<tr><td>${new Date(x.transaction_date).toLocaleDateString()}</td><td>${escapeHtml(x.transaction_type)}</td><td>${escapeHtml(x.warehouses?.warehouse_name)}</td><td>${escapeHtml(x.spare_parts?.part_code+' - '+x.spare_parts?.part_name)}</td><td>${x.quantity}</td><td>${Number(x.unit_price||0).toFixed(2)}</td><td>${escapeHtml(x.equipment?.equipment_code)}</td><td>${escapeHtml(x.work_orders?.work_order_number)}</td><td>${escapeHtml(x.reference_number)}</td></tr>`))}
+async function addWorkOrder(){try{if(!val('wo_number')||!val('wo_equipment')||!val('wo_title'))throw Error('Work order number, equipment and title are required');const {error}=await db.from('work_orders').insert({work_order_number:val('wo_number'),equipment_id:val('wo_equipment'),title:val('wo_title'),priority:val('wo_priority'),status:val('wo_status'),assigned_to:val('wo_assigned'),labor_cost:Number(val('wo_labor')||0),description:val('wo_desc'),notes:val('wo_notes')});if(error)throw error;showMsg('Work order saved');await loadWorkOrders();await loadDashboard()}catch(e){showMsg(e.message,false)}}
+async function loadWorkOrders(){const {data,error}=await db.from('work_orders').select('*,equipment(equipment_code,equipment_model)').order('created_at',{ascending:false});if(error)throw error;workOrders=data||[];el('workTable').innerHTML=table(['WO Number','Equipment','Title','Priority','Status','Assigned To','Labor Cost','Opened'],workOrders.map(x=>`<tr><td>${escapeHtml(x.work_order_number)}</td><td>${escapeHtml(x.equipment?.equipment_code)}</td><td>${escapeHtml(x.title)}</td><td>${escapeHtml(x.priority)}</td><td>${escapeHtml(x.status)}</td><td>${escapeHtml(x.assigned_to)}</td><td>${Number(x.labor_cost||0).toFixed(2)}</td><td>${escapeHtml(x.opened_at)}</td></tr>`));options('st_work',workOrders,x=>`${x.work_order_number} - ${x.title}`,'Select Work Order')}
+async function addMaintenanceType(){try{if(!val('mt_name')||!val('mt_interval'))throw Error('Maintenance name and interval are required');const {error}=await db.from('maintenance_types').insert({maintenance_name:val('mt_name'),interval_hours:Number(val('mt_interval')),description:val('mt_desc')});if(error)throw error;showMsg('Maintenance type saved');await loadMaintenanceTypes()}catch(e){showMsg(e.message,false)}}
+async function loadMaintenanceTypes(){maintenanceTypes=await getRows('maintenance_types','*','maintenance_name',true);el('typesTable').innerHTML=table(['Maintenance Name','Interval Hours','Description'],maintenanceTypes.map(x=>`<tr><td>${escapeHtml(x.maintenance_name)}</td><td>${x.interval_hours}</td><td>${escapeHtml(x.description)}</td></tr>`));options('mr_type',maintenanceTypes,x=>x.maintenance_name,'Select Maintenance Type')}
+async function addMaintenanceRecord(){try{if(!val('mr_equipment')||!val('mr_type')||!val('mr_date')||val('mr_hours')==='')throw Error('Equipment, type, date and operating hours are required');const {error}=await db.from('maintenance_records').insert({equipment_id:val('mr_equipment'),maintenance_type_id:val('mr_type'),maintenance_date:val('mr_date'),operating_hours:Number(val('mr_hours')),maintenance_description:val('mr_desc'),parts_replaced:val('mr_parts'),labor_cost:Number(val('mr_labor')||0),spare_parts_cost:Number(val('mr_cost')||0),total_cost:Number(val('mr_labor')||0)+Number(val('mr_cost')||0),next_due_hours:Number(val('mr_next'))||null,performed_by:val('mr_by'),remarks:val('mr_remarks')});if(error)throw error;showMsg('Maintenance record saved');await loadMaintenanceRecords();await loadDashboard()}catch(e){showMsg(e.message,false)}}
+async function loadMaintenanceRecords(){const {data,error}=await db.from('maintenance_records').select('*,equipment(equipment_code),maintenance_types(maintenance_name)').order('maintenance_date',{ascending:false});if(error)throw error;el('maintenanceTable').innerHTML=table(['Date','Equipment','Type','Hours','Description','Total Cost','Next Due'],(data||[]).map(x=>`<tr><td>${escapeHtml(x.maintenance_date)}</td><td>${escapeHtml(x.equipment?.equipment_code)}</td><td>${escapeHtml(x.maintenance_types?.maintenance_name)}</td><td>${x.operating_hours}</td><td>${escapeHtml(x.maintenance_description)}</td><td>${Number(x.total_cost||0).toFixed(2)}</td><td>${x.next_due_hours??''}</td></tr>`))}
+async function loadAlerts(){const {data,error}=await db.from('low_stock_alerts').select('*').order('part_name');if(error)throw error;const rows=(data||[]).map(x=>`<tr><td>${escapeHtml(x.warehouse_name)}</td><td>${escapeHtml(x.part_code)}</td><td>${escapeHtml(x.part_name)}</td><td>${x.current_stock}</td><td>${x.minimum_stock}</td><td><span class="badge red">${escapeHtml(x.alert_status)}</span></td></tr>`);el('dashAlerts').innerHTML=table(['Warehouse','Code','Part','Balance','Minimum','Alert'],rows);el('dAlerts').textContent=(data||[]).length}
+async function loadDashboard(){const [e,p,w,m]=await Promise.all([db.from('equipment').select('id',{count:'exact',head:true}),db.from('spare_parts').select('id',{count:'exact',head:true}),db.from('work_orders').select('id',{count:'exact',head:true}).not('status','in','("Completed","Cancelled")'),db.from('maintenance_records').select('id',{count:'exact',head:true})]);[e,p,w,m].forEach(r=>{if(r.error)throw r.error});el('dEquipment').textContent=e.count||0;el('dParts').textContent=p.count||0;el('dWork').textContent=w.count||0;el('dMaint').textContent=m.count||0;await loadAlerts();const {data,error}=await db.from('stock_transactions').select('transaction_date,transaction_type,quantity,spare_parts(part_code,part_name),warehouses(warehouse_name)').order('transaction_date',{ascending:false}).limit(8);if(error)throw error;el('recentStock').innerHTML=table(['Date','Type','Warehouse','Part','Quantity'],(data||[]).map(x=>`<tr><td>${new Date(x.transaction_date).toLocaleDateString()}</td><td>${escapeHtml(x.transaction_type)}</td><td>${escapeHtml(x.warehouses?.warehouse_name)}</td><td>${escapeHtml(x.spare_parts?.part_code+' - '+x.spare_parts?.part_name)}</td><td>${x.quantity}</td></tr>`))}
+async function loadEquipmentReport(){const id=val('report_equipment');if(!id){el('equipmentReport').textContent='Choose equipment to view its report.';return}try{const [usage,maint,orders]=await Promise.all([db.from('equipment_parts_usage').select('*').eq('equipment_id',id),db.from('maintenance_records').select('*,maintenance_types(maintenance_name)').eq('equipment_id',id).order('maintenance_date',{ascending:false}),db.from('work_orders').select('*').eq('equipment_id',id).order('created_at',{ascending:false})]);[usage,maint,orders].forEach(r=>{if(r.error)throw r.error});el('equipmentReport').innerHTML='<h3>Spare Parts Used</h3>'+table(['Part Code','Part Name','Net Quantity','Net Cost'],(usage.data||[]).map(x=>`<tr><td>${escapeHtml(x.part_code)}</td><td>${escapeHtml(x.part_name)}</td><td>${x.net_quantity}</td><td>${Number(x.net_cost||0).toFixed(2)}</td></tr>`))+'<h3>Maintenance History</h3>'+table(['Date','Type','Hours','Description','Cost'],(maint.data||[]).map(x=>`<tr><td>${escapeHtml(x.maintenance_date)}</td><td>${escapeHtml(x.maintenance_types?.maintenance_name)}</td><td>${x.operating_hours}</td><td>${escapeHtml(x.maintenance_description)}</td><td>${Number(x.total_cost||0).toFixed(2)}</td></tr>`))+'<h3>Work Orders</h3>'+table(['Number','Title','Status','Priority','Labor Cost'],(orders.data||[]).map(x=>`<tr><td>${escapeHtml(x.work_order_number)}</td><td>${escapeHtml(x.title)}</td><td>${escapeHtml(x.status)}</td><td>${escapeHtml(x.priority)}</td><td>${Number(x.labor_cost||0).toFixed(2)}</td></tr>`))}catch(e){showMsg(e.message,false)}}
+el('mr_date').value=new Date().toISOString().slice(0,10);
+db.auth.getSession().then(({data})=>{if(data.session)showApp()});
 </script>
-</body>
-</html>
+</body></html>
