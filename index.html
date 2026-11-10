@@ -54,6 +54,47 @@ th{background:#f7f9fc;color:#526078}
 
 <div id="app">
 <main>
+  <div class="card">
+<h3>Maintenance Types</h3>
+<p class="muted">Manage preventive maintenance schedules.</p>
+
+<div class="form-grid">
+  <div>
+    <label>Maintenance Name *</label>
+    <input id="maintenanceName" placeholder="e.g. Engine Oil Change">
+  </div>
+
+  <div>
+    <label>Interval Hours *</label>
+    <input id="maintenanceInterval" type="number" min="1" placeholder="e.g. 250">
+  </div>
+
+  <div>
+    <label>Description</label>
+    <input id="maintenanceDescription" placeholder="Maintenance details">
+  </div>
+</div>
+
+<button class="primary" onclick="addMaintenanceType()">Save Maintenance Type</button>
+
+<div id="maintenanceMessage"></div>
+
+<h3 style="margin-top:25px">Maintenance Types List</h3>
+<div class="table-wrap">
+<table>
+<thead>
+<tr>
+<th>Maintenance Name</th>
+<th>Interval Hours</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody id="maintenanceRows">
+<tr><td colspan="3">No maintenance types loaded.</td></tr>
+</tbody>
+</table>
+</div>
+</div>
 <div class="card">
 <h3>Equipment Dashboard</h3>
 <p class="muted">Total registered equipment</p>
@@ -154,7 +195,9 @@ const SUPABASE_KEY = "sb_publishable_FueLZy87Cb5FPnC6I1tDjw_kI2gDPn8";
 const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let equipmentList = [];
 
-async function login(){
+
+  async function login(){
+  
   const email = document.getElementById("email").value.trim();
   const password = document.getElementById("password").value;
   const message = document.getElementById("loginMessage");
@@ -183,6 +226,7 @@ function showApp(){
   document.getElementById("app").style.display = "block";
   document.getElementById("logout").style.display = "block";
   loadEquipment();
+  loadMaintenanceTypes();
 }
 
 async function loadEquipment(){
