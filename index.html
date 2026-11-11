@@ -200,8 +200,6 @@ th{background:#1a293d!important;color:#b6c5d9!important;border-color:#29384c!imp
    <div class="stat"><div class="stat-top">Spare Parts <span class="stat-icon">◇</span></div><div class="stat-value" id="statParts">—</div><div class="stat-note">Registered part items</div></div>
   </div>
   <div class="grid-two"><div class="panel"><h3>Equipment overview</h3><div class="panel-sub">Current equipment status distribution</div><div class="chart-box"><canvas id="equipmentChart"></canvas></div></div><div class="panel"><h3>Quick overview</h3><div class="panel-sub">Your workspace at a glance</div><div id="quickOverview" style="display:grid;gap:15px;padding-top:5px"></div></div></div>
-  <div class="grid-two"><div class="panel"><h3>Maintenance activity</h3><div class="panel-sub">Maintenance records during the last 6 months</div><div class="chart-box"><canvas id="maintenanceTrendChart"></canvas></div></div><div class="panel"><h3>Work orders status</h3><div class="panel-sub">Distribution of work orders by status</div><div class="chart-box"><canvas id="workOrdersChart"></canvas></div></div></div>
-  <div class="grid-two"><div class="panel"><h3>Spare parts stock watch</h3><div class="panel-sub">Parts with the lowest available stock compared with minimum level</div><div class="chart-box"><canvas id="stockWatchChart"></canvas></div></div><div class="panel"><h3>Maintenance snapshot</h3><div class="panel-sub">A quick summary of maintenance workload</div><div id="maintenanceSnapshot" style="display:grid;gap:15px;padding-top:5px"></div></div></div>
   <div class="section-head"><div><h3>Recently registered equipment</h3><p>Latest assets added to your fleet</p></div><button class="btn btn-light" data-goto="equipment">View all equipment →</button></div>
   <div class="table-wrap" id="recentEquipment"><div class="loading">Loading equipment…</div></div>
  </section>
@@ -247,7 +245,7 @@ purchase_orders:{title:"Create Purchase Order",table:"purchase_orders",fields:[[
 };
 const orderColumns={equipment:"created_at",maintenance_types:"created_at",maintenance_records:"maintenance_date",operating_hour_logs:"log_date",spare_parts:"created_at",warehouses:"created_at",suppliers:"created_at",stock_balances:"updated_at",stock_transactions:"transaction_date",work_orders:"created_at",equipment_inspections:"inspection_date",equipment_movements:"movement_date",equipment_documents:"created_at",preventive_maintenance_schedules:"created_at",system_notifications:"created_at",purchase_orders:"order_date"};
 const titles={dashboard:"Dashboard",equipment:"Equipment",alerts:"Maintenance Alerts",maintenance:"Maintenance Records",types:"Maintenance Types",hours:"Operating Hours",parts:"Spare Parts",warehouses:"Warehouses",suppliers:"Suppliers",stock:"Stock Transactions",workorders:"Work Orders",inspections:"Equipment Inspections",movements:"Equipment Movements",schedules:"Preventive Maintenance",documents:"Equipment Documents",notifications:"Notifications",purchases:"Purchase Orders"};
-function toast(msg,duration=3200){const el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");clearTimeout(el._hideTimer);el._hideTimer=setTimeout(()=>el.classList.remove("show"),duration)}
+function toast(msg){const el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");setTimeout(()=>el.classList.remove("show"),3200)}
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function fmt(v){return v==null||v===""?"—":esc(v)}
 function currentMeter(equipmentId){const e=state.equipment.find(x=>String(x.id)===String(equipmentId));return e?e.current_operating_hours:null;}
@@ -311,36 +309,10 @@ function playMaintenanceAlarm(){
 }
 
 function renderAll(){renderDashboard();renderEquipment();renderMaintenance();renderTypes();renderHours();renderParts();renderWarehouses();renderSuppliers();renderTransactions();renderWorkOrders();renderInspections();renderMovements();renderSchedules();renderDocuments();renderNotifications();renderPurchases();renderMaintenanceAlerts()}
-function destroyChart(canvasId,globalName){
- const canvas=document.getElementById(canvasId);
- if(window.Chart&&canvas&&typeof window.Chart.getChart==="function"){
-  const chart=window.Chart.getChart(canvas);
-  if(chart)chart.destroy();
- }
- try{if(globalName&&Object.prototype.hasOwnProperty.call(window,globalName))delete window[globalName]}catch(e){}
-}
 function renderDashboard(){const e=state.equipment,m=state.maintenance_records,w=state.work_orders,p=state.spare_parts;document.getElementById("statEquipment").textContent=e.length;document.getElementById("statMaintenance").textContent=m.length;document.getElementById("statWorkOrders").textContent=w.filter(x=>!["completed","cancelled"].includes(String(x.status||"").toLowerCase())).length;document.getElementById("statParts").textContent=p.length;
 const active=e.filter(x=>String(x.status||"").toLowerCase()==="active").length,under=e.filter(x=>String(x.status||"").toLowerCase().includes("maintenance")).length,out=e.filter(x=>String(x.status||"").toLowerCase().includes("out")).length;
-if(window.Chart){destroyChart("equipmentChart","eqChart");window.eqChart=new Chart(document.getElementById("equipmentChart"),{type:"doughnut",data:{labels:["Active","Under Maintenance","Out of Service","Other"],datasets:[{data:[active,under,out,Math.max(0,e.length-active-under-out)],backgroundColor:["#3867e8","#e99a35","#df5b65","#d9e1ee"],borderWidth:0,hoverOffset:5}]},options:{maintainAspectRatio:false,cutout:"70%",plugins:{legend:{position:"bottom",labels:{usePointStyle:true,boxWidth:7,padding:17,font:{size:10}}}}}})}
+if(window.Chart){if(window.eqChart)window.eqChart.destroy();window.eqChart=new Chart(document.getElementById("equipmentChart"),{type:"doughnut",data:{labels:["Active","Under Maintenance","Out of Service","Other"],datasets:[{data:[active,under,out,Math.max(0,e.length-active-under-out)],backgroundColor:["#3867e8","#e99a35","#df5b65","#d9e1ee"],borderWidth:0,hoverOffset:5}]},options:{maintainAspectRatio:false,cutout:"70%",plugins:{legend:{position:"bottom",labels:{usePointStyle:true,boxWidth:7,padding:17,font:{size:10}}}}}})}
 document.getElementById("quickOverview").innerHTML=[["Active equipment",active,"#3867e8"],["Under maintenance",under,"#e99a35"],["Out of service",out,"#df5b65"],["Warehouses",state.warehouses.length,"#14a995"]].map(x=>`<div style="display:flex;align-items:center;justify-content:space-between"><span style="font-size:12px;color:#718098"><i style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${x[2]};margin-right:9px"></i>${x[0]}</span><strong style="font:800 17px Manrope">${x[1]}</strong></div>`).join("");
-
-// Maintenance activity: monthly totals for the last six calendar months.
-const monthKeys=[];const monthLabels=[];const now=new Date();
-for(let i=5;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);monthKeys.push(`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`);monthLabels.push(d.toLocaleDateString("en",{month:"short",year:"2-digit"}));}
-const maintenanceMonthly=monthKeys.map(key=>m.filter(x=>String(x.maintenance_date||"").slice(0,7)===key).length);
-if(window.Chart){
- destroyChart("maintenanceTrendChart","maintenanceTrendChart");
- window.maintenanceTrendChart=new Chart(document.getElementById("maintenanceTrendChart"),{type:"bar",data:{labels:monthLabels,datasets:[{label:"Maintenance records",data:maintenanceMonthly,backgroundColor:"#5278e8",borderRadius:7,maxBarThickness:34}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}},x:{grid:{display:false}}}}});
- const workStatus={};w.forEach(x=>{const k=String(x.status||"Unknown").replace(/_/g," ");workStatus[k]=(workStatus[k]||0)+1});
- destroyChart("workOrdersChart","workOrdersChart");
- window.workOrdersChart=new Chart(document.getElementById("workOrdersChart"),{type:"doughnut",data:{labels:Object.keys(workStatus).length?Object.keys(workStatus):["No work orders"],datasets:[{data:Object.keys(workStatus).length?Object.values(workStatus):[1],backgroundColor:["#3867e8","#e99a35","#14a995","#df5b65","#9b78d1","#9aa8ba"],borderWidth:0,hoverOffset:5}]},options:{responsive:true,maintainAspectRatio:false,cutout:"65%",plugins:{legend:{position:"bottom",labels:{usePointStyle:true,boxWidth:7,padding:13,font:{size:10}}}}}});
- const stockParts=p.map(part=>{const qty=state.stock_balances.filter(b=>String(b.spare_part_id)===String(part.id)).reduce((sum,b)=>sum+Number(b.quantity||0),0);return {label:String(part.part_code||part.part_name||"Part"),qty,min:Number(part.minimum_stock||0)}}).sort((a,b)=>(a.qty-a.min)-(b.qty-b.min)).slice(0,8);
- destroyChart("stockWatchChart","stockWatchChart");
- window.stockWatchChart=new Chart(document.getElementById("stockWatchChart"),{type:"bar",data:{labels:stockParts.length?stockParts.map(x=>x.label):["No parts"],datasets:[{label:"Available",data:stockParts.length?stockParts.map(x=>x.qty):[0],backgroundColor:stockParts.map(x=>x.qty<=x.min?"#df5b65":"#14a995"),borderRadius:6},{label:"Minimum stock",data:stockParts.length?stockParts.map(x=>x.min):[0],backgroundColor:"#e5a64b",borderRadius:6}]},options:{indexAxis:"y",responsive:true,maintainAspectRatio:false,plugins:{legend:{position:"bottom",labels:{usePointStyle:true,boxWidth:7,font:{size:10}}}},scales:{x:{beginAtZero:true},y:{grid:{display:false}}}}});
-}
-const dueNow=state.preventive_maintenance_schedules.filter(x=>String(x.status||"active").toLowerCase()==="active").length;
-const completed=w.filter(x=>String(x.status||"").toLowerCase()==="completed").length;
-document.getElementById("maintenanceSnapshot").innerHTML=[["Total maintenance records",m.length,"#3867e8"],["Open work orders",w.filter(x=>!['completed','cancelled'].includes(String(x.status||"").toLowerCase())).length,"#e99a35"],["Completed work orders",completed,"#14a995"],["Preventive schedules",dueNow,"#9b78d1"]].map(x=>`<div style="display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #eff2f7;padding:9px 0"><span style="font-size:12px;color:#718098">${x[0]}</span><strong style="font:800 18px Manrope;color:${x[2]}">${x[1]}</strong></div>`).join("");
 document.getElementById("recentEquipment").innerHTML=table(["Equipment Code","Model","Project","Location","Operating Hours","Status"],e.slice(0,6).map(x=>row([`<strong>${fmt(x.equipment_code)}</strong>`,fmt(x.equipment_model),fmt(x.project),fmt(x.current_location),fmt(x.current_operating_hours),statusTag(x.status)])))}
 function renderEquipment(filter=""){
  const list=state.equipment.filter(x=>[x.equipment_code,x.equipment_model,x.serial_number,x.project,x.current_location].join(" ").toLowerCase().includes(filter.toLowerCase()));
@@ -484,16 +456,12 @@ document.getElementById("recordForm").addEventListener("submit",async e=>{
   else if(activeSpec.table==="warehouses"&&editingRecordId)result=await db.from("warehouses").update(payload).eq("id",editingRecordId);
   else if(activeSpec.table==="maintenance_records"&&editingRecordId)result=await db.from("maintenance_records").update(payload).eq("id",editingRecordId);
   else if(activeSpec.table==="operating_hour_logs"){
-    const asset=state.equipment.find(x=>String(x.id)===String(payload.equipment_id));if(!asset)throw new Error("Select a valid equipment item.");
-    const reading=Number(payload.operating_hours),readingDate=String(payload.log_date||"");
-    if(!Number.isFinite(reading)||reading<0)throw new Error("Enter a valid operating-hours reading.");
-    const {data:latestLog,error:findError}=await db.from("operating_hour_logs").select("id,log_date,operating_hours").eq("equipment_id",payload.equipment_id).order("log_date",{ascending:false}).limit(1).maybeSingle();if(findError)throw findError;
-    const previous=Number(asset.current_operating_hours||0);
-    const isCurrentOrNewer=!latestLog||!latestLog.log_date||readingDate>=String(latestLog.log_date).slice(0,10);
-    if(isCurrentOrNewer&&reading<previous)throw new Error("Reading cannot be lower than the current equipment meter ("+previous+"). For an older reading, choose its actual earlier date.");
-    result=await db.from("operating_hour_logs").insert(payload);
-    if(!result.error&&isCurrentOrNewer){const upd=await db.from("equipment").update({current_operating_hours:reading}).eq("id",payload.equipment_id);if(upd.error)throw new Error("Reading saved, but equipment meter update failed: "+upd.error.message)}
-   }else if(activeSpec.table==="spare_parts"){
+   const asset=state.equipment.find(x=>String(x.id)===String(payload.equipment_id));if(!asset)throw new Error("Select a valid equipment item.");
+   const previous=Number(asset.current_operating_hours||0),reading=Number(payload.operating_hours);if(reading<previous)throw new Error("Reading cannot be lower than the current equipment meter ("+previous+").");
+   const {data:existingLog,error:findError}=await db.from("operating_hour_logs").select("id").eq("equipment_id",payload.equipment_id).order("log_date",{ascending:false}).limit(1).maybeSingle();if(findError)throw findError;
+   result=existingLog?await db.from("operating_hour_logs").update(payload).eq("id",existingLog.id):await db.from("operating_hour_logs").insert(payload);
+   if(!result.error){const upd=await db.from("equipment").update({current_operating_hours:reading}).eq("id",payload.equipment_id);if(upd.error)throw new Error("Reading saved, but equipment meter update failed: "+upd.error.message)}
+  }else if(activeSpec.table==="spare_parts"){
    if(editingRecordId){
     result=await db.from("spare_parts").update(payload).eq("id",editingRecordId);
    }else{
@@ -522,7 +490,7 @@ document.getElementById("recordForm").addEventListener("submit",async e=>{
    if(payload.maintenance_type_id){const sc=await db.from("preventive_maintenance_schedules").update({last_service_hours:hours,last_service_date:payload.maintenance_date,...(next!==null?{next_due_hours:next}:{})}).eq("equipment_id",eqid).eq("maintenance_type_id",payload.maintenance_type_id);if(sc.error)console.warn(sc.error.message)}
   }
   closeForm();e.target.reset();toast(activeSpec.table==="spare_parts"&&openingStockSaved?"Spare part created and "+fd.get("opening_quantity")+" units added to the selected warehouse.":(wasEdit?"Record updated successfully":"Record saved successfully"));await loadAll();
- }catch(err){console.error("APFC save error:",err);toast("Could not save: "+(err.message||"Unknown error"),10000)}
+ }catch(err){console.error("APFC save error:",err);toast("Could not save: "+(err.message||"Unknown error"))}
  finally{btn.disabled=false;btn.textContent="Save record"}
 });
 
