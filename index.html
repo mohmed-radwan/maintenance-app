@@ -209,7 +209,7 @@ th{background:#1a293d!important;color:#b6c5d9!important;border-color:#29384c!imp
  <section id="page-types" class="content"><div class="section-head"><div><h3>Maintenance types</h3><p>Configure preventive maintenance intervals</p></div><button class="btn btn-primary" id="addType">＋ Add Type</button></div><div class="table-wrap" id="typesTable"></div></section>
  <section id="page-hours" class="content"><div class="section-head"><div><h3>Operating hours</h3><p>Track equipment usage and daily readings</p></div><div class="toolbar"><button class="btn btn-light" id="exportHours">Export CSV</button><button class="btn btn-light" id="importHours">Import CSV</button><button class="btn btn-primary" id="addHours">＋ Add Reading</button></div></div><div class="table-wrap" id="hoursTable"></div></section>
  <section id="page-parts" class="content"><div class="section-head"><div><h3>Spare parts catalogue</h3><p>Search by part number or name, and filter stock by warehouse</p></div><div class="toolbar"><input class="search" id="partsSearch" placeholder="Search Part Number or Name…"><select class="search" id="partsWarehouseFilter" aria-label="Filter by warehouse"><option value="">All Warehouses</option></select><button class="btn btn-light" id="exportParts">Export CSV</button><button class="btn btn-light" id="importParts">Import CSV</button><button class="btn btn-primary" id="addPart">＋ Add Part</button></div></div><div class="table-wrap" id="partsTable"></div></section>
- <section id="page-warehouses" class="content"><div class="section-head"><div><h3>Warehouses</h3><p>Storage locations and warehouse details</p></div><button class="btn btn-primary" id="addWarehouse">＋ Add Warehouse</button></div><div class="table-wrap" id="warehousesTable"></div><div class="section-head"><div><h3>Stock balances</h3><p>Current quantity by warehouse and part</p></div></div><div class="table-wrap" id="balancesTable"></div></section>
+ <section id="page-warehouses" class="content"><div class="section-head"><div><h3>Warehouses</h3><p>Each warehouse has its own code and name. Open a warehouse to view its contents.</p></div><button class="btn btn-primary" id="addWarehouse">＋ Add Warehouse</button></div><div class="table-wrap" id="warehousesTable"></div><div class="panel hidden" id="warehouseDetails" style="margin-top:18px"><div class="section-head" style="margin-top:0"><div><h3 id="warehouseDetailsTitle">Warehouse contents</h3><p id="warehouseDetailsSubtitle">Parts stored in this warehouse</p></div><button class="btn btn-light" id="closeWarehouseDetails">Close</button></div><div class="stats" style="margin-bottom:15px"><div class="stat"><div class="stat-top">Part Items</div><div class="stat-value" id="warehousePartCount">0</div></div><div class="stat"><div class="stat-top">Total Quantity</div><div class="stat-value" id="warehouseTotalQty">0</div></div></div><div class="table-wrap" id="warehouseContentsTable"></div></div><div class="section-head"><div><h3>All stock balances</h3><p>Current quantity by warehouse and part</p></div></div><div class="table-wrap" id="balancesTable"></div></section>
  <section id="page-suppliers" class="content"><div class="section-head"><div><h3>Suppliers</h3><p>Supplier contacts and purchasing information</p></div><button class="btn btn-primary" id="addSupplier">＋ Add Supplier</button></div><div class="table-wrap" id="suppliersTable"></div></section>
  <section id="page-stock" class="content"><div class="section-head"><div><h3>Stock transactions</h3><p>Receipts, issues, returns and adjustments</p></div><div class="toolbar"><button class="btn btn-light" id="exportTransactions">Export CSV</button><button class="btn btn-primary" id="addTransaction">＋ New Transaction</button></div></div><div class="table-wrap" id="transactionsTable"></div></section>
  <section id="page-workorders" class="content"><div class="section-head"><div><h3>Work orders</h3><p>Track maintenance jobs from opening to completion</p></div><button class="btn btn-primary" id="addWorkOrder">＋ Create Work Order</button></div><div class="table-wrap" id="workOrdersTable"></div></section>
@@ -334,7 +334,7 @@ function renderParts(){
  const selected=filter?.value||"",term=(search?.value||"").trim().toLowerCase();
  if(filter){
   const keep=filter.value;
-  filter.innerHTML='<option value="">All Warehouses</option>'+state.warehouses.map(w=>`<option value="${esc(w.id)}">${esc(w.warehouse_name)}</option>`).join("");
+  filter.innerHTML='<option value="">All Warehouses</option>'+state.warehouses.map(w=>`<option value="${esc(w.id)}">${esc((w.warehouse_code||"")+" — "+(w.warehouse_name||""))}</option>`).join("");
   if(state.warehouses.some(w=>String(w.id)===String(keep)))filter.value=keep;
  }
  const list=state.spare_parts.filter(part=>{
@@ -347,12 +347,32 @@ function renderParts(){
   const balances=state.stock_balances.filter(b=>String(b.spare_part_id)===String(part.id)&&(!selected||String(b.warehouse_id)===String(selected)));
   const stockText=balances.length?balances.map(b=>{
    const wh=state.warehouses.find(w=>String(w.id)===String(b.warehouse_id));
-   return `<span class="tag">${esc(wh?.warehouse_name||"Warehouse")}: <strong>${fmt(b.quantity)}</strong></span>`;
+   return `<span class="tag">${esc((wh?.warehouse_code?wh.warehouse_code+" — ":"")+(wh?.warehouse_name||"Warehouse"))}: <strong>${fmt(b.quantity)}</strong></span>`;
   }).join(" "):"—";
   return row([`<strong>${fmt(part.part_code)}</strong>`,fmt(part.part_name),fmt(part.category),fmt(part.unit),fmt(state.suppliers.find(s=>String(s.id)===String(part.supplier_id))?.supplier_name),stockText,fmt(part.purchase_price),fmt(part.minimum_stock),`<button type="button" class="action-btn action-edit" data-part-edit="${esc(part.id)}">Edit</button>`]);
  }));
 }
-function renderWarehouses(){document.getElementById("warehousesTable").innerHTML=table(["Code","Warehouse Name","Location","Notes"],state.warehouses.map(x=>row([fmt(x.warehouse_code),`<strong>${fmt(x.warehouse_name)}</strong>`,fmt(x.location),fmt(x.notes)])));document.getElementById("balancesTable").innerHTML=table(["Warehouse","Part Code","Part Name","Quantity","Minimum Stock"],state.stock_balances.map(x=>row([fmt(x.warehouses?.warehouse_name||state.warehouses.find(w=>w.id===x.warehouse_id)?.warehouse_name),fmt(x.spare_parts?.part_code||state.spare_parts.find(p=>p.id===x.spare_part_id)?.part_code),fmt(x.spare_parts?.part_name||state.spare_parts.find(p=>p.id===x.spare_part_id)?.part_name),`<strong>${fmt(x.quantity)}</strong>`,fmt(x.spare_parts?.minimum_stock||state.spare_parts.find(p=>p.id===x.spare_part_id)?.minimum_stock)])))}
+function renderWarehouses(){
+ document.getElementById("warehousesTable").innerHTML=table(["Warehouse Code","Warehouse Name","Location","Notes","Contents"],state.warehouses.map(x=>row([`<strong>${fmt(x.warehouse_code)}</strong>`,`<strong>${fmt(x.warehouse_name)}</strong>`,fmt(x.location),fmt(x.notes),`<button type="button" class="action-btn action-edit" data-warehouse-open="${esc(x.id)}">Open Warehouse</button>`])));
+ document.getElementById("balancesTable").innerHTML=table(["Warehouse Code","Warehouse Name","Part Code","Part Name","Quantity","Minimum Stock"],state.stock_balances.map(x=>{const w=state.warehouses.find(v=>String(v.id)===String(x.warehouse_id)),p=state.spare_parts.find(v=>String(v.id)===String(x.spare_part_id));return row([fmt(w?.warehouse_code),fmt(w?.warehouse_name),fmt(p?.part_code),fmt(p?.part_name),`<strong>${fmt(x.quantity)}</strong>`,fmt(p?.minimum_stock)])}));
+ if(selectedWarehouseId&&state.warehouses.some(w=>String(w.id)===String(selectedWarehouseId)))showWarehouseDetails(selectedWarehouseId);else{selectedWarehouseId=null;document.getElementById("warehouseDetails").classList.add("hidden")}
+}
+let selectedWarehouseId=null;
+function showWarehouseDetails(id){
+ const w=state.warehouses.find(x=>String(x.id)===String(id));if(!w)return;
+ selectedWarehouseId=w.id;
+ const balances=state.stock_balances.filter(x=>String(x.warehouse_id)===String(w.id));
+ const valid=balances.filter(x=>Number(x.quantity)!==0);
+ const total=valid.reduce((sum,x)=>sum+Number(x.quantity||0),0);
+ document.getElementById("warehouseDetailsTitle").textContent=(w.warehouse_code||"")+" — "+(w.warehouse_name||"Warehouse");
+ document.getElementById("warehouseDetailsSubtitle").textContent=(w.location||"No location specified")+" · Items currently stored in this warehouse";
+ document.getElementById("warehousePartCount").textContent=valid.length;
+ document.getElementById("warehouseTotalQty").textContent=total.toLocaleString();
+ document.getElementById("warehouseContentsTable").innerHTML=table(["Part Code","Part Name","Category","Unit","Quantity","Minimum Stock","Purchase Price"],valid.map(b=>{const p=state.spare_parts.find(x=>String(x.id)===String(b.spare_part_id));return row([fmt(p?.part_code),`<strong>${fmt(p?.part_name)}</strong>`,fmt(p?.category),fmt(p?.unit),`<strong>${fmt(b.quantity)}</strong>`,fmt(p?.minimum_stock),fmt(p?.purchase_price)])}),"This warehouse has no stock yet.");
+ document.getElementById("warehouseDetails").classList.remove("hidden");
+}
+document.getElementById("warehousesTable").addEventListener("click",e=>{const b=e.target.closest("[data-warehouse-open]");if(b)showWarehouseDetails(b.dataset.warehouseOpen)});
+document.getElementById("closeWarehouseDetails").addEventListener("click",()=>{selectedWarehouseId=null;document.getElementById("warehouseDetails").classList.add("hidden")});
 function renderSuppliers(){document.getElementById("suppliersTable").innerHTML=table(["Supplier Code","Supplier Name","Contact Person","Phone","Email","Address"],state.suppliers.map(x=>row([fmt(x.supplier_code),`<strong>${fmt(x.supplier_name)}</strong>`,fmt(x.contact_person),fmt(x.phone),fmt(x.email),fmt(x.address)])))}
 function renderTransactions(){document.getElementById("transactionsTable").innerHTML=table(["Transaction No.","Date","Type","Part","Warehouse","Quantity","Equipment","Unit Price","Reference"],state.stock_transactions.map(x=>row([`<strong>${fmt(x.transaction_number||"Pending SQL setup")}</strong>`,dateFmt(x.transaction_date),statusTag(x.transaction_type),fmt(x.spare_parts?.part_name||state.spare_parts.find(p=>p.id===x.spare_part_id)?.part_name),fmt(x.warehouses?.warehouse_name||state.warehouses.find(w=>w.id===x.warehouse_id)?.warehouse_name),fmt(x.quantity),fmt(state.equipment.find(e=>String(e.id)===String(x.equipment_id))?.equipment_code),fmt(x.unit_price),fmt(x.reference_number)])))}
 function renderWorkOrders(){document.getElementById("workOrdersTable").innerHTML=table(["Work Order","Title","Equipment","Priority","Status","Opened","Assigned To"],state.work_orders.map(x=>row([`<strong>${fmt(x.work_order_number)}</strong>`,fmt(x.title),fmt(x.equipment?.equipment_code||state.equipment.find(e=>e.id===x.equipment_id)?.equipment_code),statusTag(x.priority),statusTag(x.status),dateFmt(x.opened_at),fmt(x.assigned_to)])))}
@@ -390,7 +410,7 @@ function openForm(key,record=null){
   activeSpec.fields.forEach(([name,label,type="text",required=false,extra])=>{
    const box=document.createElement("div");box.className=(type==="textarea"?"full":"");let control;
    if(type==="select"){control=document.createElement("select");control.innerHTML='<option value="">Select…</option>'+extra.map(v=>`<option>${esc(v)}</option>`).join("")}
-   else if(type==="fk"){control=document.createElement("select");const opts=state[extra]||[];const labelKey=({equipment:"equipment_code",maintenance_types:"maintenance_name",suppliers:"supplier_name",warehouses:"warehouse_name",spare_parts:"part_name",work_orders:"work_order_number"})[extra];control.innerHTML='<option value="">Select…</option>'+opts.map(v=>`<option value="${esc(v.id)}">${esc(v[labelKey]||v.id)}</option>`).join("")}
+   else if(type==="fk"){control=document.createElement("select");const opts=state[extra]||[];const labelKey=({equipment:"equipment_code",maintenance_types:"maintenance_name",suppliers:"supplier_name",warehouses:"warehouse_name",spare_parts:"part_name",work_orders:"work_order_number"})[extra];control.innerHTML='<option value="">Select…</option>'+opts.map(v=>`<option value="${esc(v.id)}">${esc(extra==="warehouses"?((v.warehouse_code||"")+" — "+(v.warehouse_name||"")):(v[labelKey]||v.id))}</option>`).join("")}
    else if(type==="textarea"){control=document.createElement("textarea");control.rows=2}
    else{control=document.createElement("input");control.type=type}
    control.name=name;control.required=!!required;
@@ -399,7 +419,7 @@ function openForm(key,record=null){
    const lab=document.createElement("label");lab.textContent=label+(required?" *":"");box.append(lab,control);wrap.append(box);
   });
   if(key==="spare_parts"&&!record){
-   const box=document.createElement("div");box.innerHTML='<label>Initial Warehouse</label><select name="opening_warehouse_id"><option value="">Select warehouse…</option>'+state.warehouses.map(w=>`<option value="${esc(w.id)}">${esc(w.warehouse_name)}</option>`).join("")+'</select>';wrap.append(box);
+   const box=document.createElement("div");box.innerHTML='<label>Initial Warehouse</label><select name="opening_warehouse_id"><option value="">Select warehouse…</option>'+state.warehouses.map(w=>`<option value="${esc(w.id)}">${esc((w.warehouse_code||"")+" — "+(w.warehouse_name||""))}</option>`).join("")+'</select>';wrap.append(box);
    const qty=document.createElement("div");qty.innerHTML='<label>Opening Quantity</label><input name="opening_quantity" type="number" min="0" step="any" value="0" placeholder="0">';wrap.append(qty);
    const price=document.createElement("div");price.innerHTML='<label>Opening Unit Price</label><input name="opening_unit_price" type="number" min="0" step="any" placeholder="Optional">';wrap.append(price);
   }
