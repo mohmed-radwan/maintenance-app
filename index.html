@@ -343,13 +343,13 @@ function renderParts(){
   const matchesWarehouse=!selected||balances.some(b=>String(b.warehouse_id)===String(selected));
   return matchesSearch&&matchesWarehouse;
  });
- document.getElementById("partsTable").innerHTML=table(["Part Number","Part Name","Category","Unit","Supplier","Warehouse Stock","Purchase Price","Minimum Stock"],list.map(part=>{
+ document.getElementById("partsTable").innerHTML=table(["Part Number","Part Name","Category","Unit","Supplier","Warehouse Stock","Purchase Price","Minimum Stock","Actions"],list.map(part=>{
   const balances=state.stock_balances.filter(b=>String(b.spare_part_id)===String(part.id)&&(!selected||String(b.warehouse_id)===String(selected)));
   const stockText=balances.length?balances.map(b=>{
    const wh=state.warehouses.find(w=>String(w.id)===String(b.warehouse_id));
    return `<span class="tag">${esc(wh?.warehouse_name||"Warehouse")}: <strong>${fmt(b.quantity)}</strong></span>`;
   }).join(" "):"—";
-  return row([`<strong>${fmt(part.part_code)}</strong>`,fmt(part.part_name),fmt(part.category),fmt(part.unit),fmt(state.suppliers.find(s=>String(s.id)===String(part.supplier_id))?.supplier_name),stockText,fmt(part.purchase_price),fmt(part.minimum_stock)]);
+  return row([`<strong>${fmt(part.part_code)}</strong>`,fmt(part.part_name),fmt(part.category),fmt(part.unit),fmt(state.suppliers.find(s=>String(s.id)===String(part.supplier_id))?.supplier_name),stockText,fmt(part.purchase_price),fmt(part.minimum_stock),`<button type="button" class="action-btn action-edit" data-part-edit="${esc(part.id)}">Edit</button>`]);
  }));
 }
 function renderWarehouses(){document.getElementById("warehousesTable").innerHTML=table(["Code","Warehouse Name","Location","Notes"],state.warehouses.map(x=>row([fmt(x.warehouse_code),`<strong>${fmt(x.warehouse_name)}</strong>`,fmt(x.location),fmt(x.notes)])));document.getElementById("balancesTable").innerHTML=table(["Warehouse","Part Code","Part Name","Quantity","Minimum Stock"],state.stock_balances.map(x=>row([fmt(x.warehouses?.warehouse_name||state.warehouses.find(w=>w.id===x.warehouse_id)?.warehouse_name),fmt(x.spare_parts?.part_code||state.spare_parts.find(p=>p.id===x.spare_part_id)?.part_code),fmt(x.spare_parts?.part_name||state.spare_parts.find(p=>p.id===x.spare_part_id)?.part_name),`<strong>${fmt(x.quantity)}</strong>`,fmt(x.spare_parts?.minimum_stock||state.spare_parts.find(p=>p.id===x.spare_part_id)?.minimum_stock)])))}
@@ -441,20 +441,24 @@ document.getElementById("recordForm").addEventListener("submit",async e=>{
    result=existingLog?await db.from("operating_hour_logs").update(payload).eq("id",existingLog.id):await db.from("operating_hour_logs").insert(payload);
    if(!result.error){const upd=await db.from("equipment").update({current_operating_hours:reading}).eq("id",payload.equipment_id);if(upd.error)throw new Error("Reading saved, but equipment meter update failed: "+upd.error.message)}
   }else if(activeSpec.table==="spare_parts"){
-   const qty=Number(fd.get("opening_quantity")||0),wh=fd.get("opening_warehouse_id"),price=fd.get("opening_unit_price");
-   if(!Number.isFinite(qty)||qty<0)throw new Error("Opening quantity must be zero or greater.");
-   if(qty>0&&!wh)throw new Error("Choose the warehouse where the opening quantity should be stored.");
-   if(price!==""&&(!Number.isFinite(Number(price))||Number(price)<0))throw new Error("Opening unit price must be zero or greater.");
-   result=await db.from("spare_parts").insert(payload).select("id").single();
-   if(!result.error&&qty>0){
-    const receipt={warehouse_id:wh,spare_part_id:result.data.id,transaction_type:"Receipt",quantity:qty,transaction_date:new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10),notes:"Opening stock created with new spare part"};
-    if(price!=="")receipt.unit_price=Number(price);
-    const sr=await db.from("stock_transactions").insert(receipt);
-    if(sr.error)throw new Error("Part was created, but stock receipt failed: "+sr.error.message);
-    const check=await db.from("stock_balances").select("quantity").eq("warehouse_id",wh).eq("spare_part_id",result.data.id).maybeSingle();
-    if(check.error)throw new Error("Stock receipt was recorded, but the warehouse balance could not be verified: "+check.error.message);
-    if(!check.data||Math.abs(Number(check.data.quantity)-qty)>0.000001)throw new Error("Stock receipt was recorded, but the warehouse balance was not updated. Please check the stock transaction trigger in Supabase before trying again.");
-    openingStockSaved=true;
+   if(editingRecordId){
+    result=await db.from("spare_parts").update(payload).eq("id",editingRecordId);
+   }else{
+    const qty=Number(fd.get("opening_quantity")||0),wh=fd.get("opening_warehouse_id"),price=fd.get("opening_unit_price");
+    if(!Number.isFinite(qty)||qty<0)throw new Error("Opening quantity must be zero or greater.");
+    if(qty>0&&!wh)throw new Error("Choose the warehouse where the opening quantity should be stored.");
+    if(price!==""&&(!Number.isFinite(Number(price))||Number(price)<0))throw new Error("Opening unit price must be zero or greater.");
+    result=await db.from("spare_parts").insert(payload).select("id").single();
+    if(!result.error&&qty>0){
+     const receipt={warehouse_id:wh,spare_part_id:result.data.id,transaction_type:"Receipt",quantity:qty,transaction_date:new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10),notes:"Opening stock created with new spare part"};
+     if(price!=="")receipt.unit_price=Number(price);
+     const sr=await db.from("stock_transactions").insert(receipt);
+     if(sr.error)throw new Error("Part was created, but stock receipt failed: "+sr.error.message);
+     const check=await db.from("stock_balances").select("quantity").eq("warehouse_id",wh).eq("spare_part_id",result.data.id).maybeSingle();
+     if(check.error)throw new Error("Stock receipt was recorded, but the warehouse balance could not be verified: "+check.error.message);
+     if(!check.data||Math.abs(Number(check.data.quantity)-qty)>0.000001)throw new Error("Stock receipt was recorded, but the warehouse balance was not updated. Please check the stock transaction trigger in Supabase before trying again.");
+     openingStockSaved=true;
+    }
    }
   }else result=await db.from(activeSpec.table).insert(payload);
   if(result.error)throw result.error;
@@ -467,6 +471,11 @@ document.getElementById("recordForm").addEventListener("submit",async e=>{
   closeForm();e.target.reset();toast(activeSpec.table==="spare_parts"&&openingStockSaved?"Spare part created and "+fd.get("opening_quantity")+" units added to the selected warehouse.":(wasEdit?"Record updated successfully":"Record saved successfully"));await loadAll();
  }catch(err){console.error("APFC save error:",err);toast("Could not save: "+(err.message||"Unknown error"))}
  finally{btn.disabled=false;btn.textContent="Save record"}
+});
+
+document.getElementById("partsTable").addEventListener("click",e=>{
+ const edit=e.target.closest("[data-part-edit]");
+ if(edit){const rec=state.spare_parts.find(x=>String(x.id)===edit.dataset.partEdit);if(rec)openForm("spare_parts",rec)}
 });
 
 document.getElementById("equipmentTable").addEventListener("click",async e=>{
