@@ -169,6 +169,7 @@ th{background:#1a293d!important;color:#b6c5d9!important;border-color:#29384c!imp
  <button class="nav-btn active" data-page="dashboard"><span class="ico">▦</span>Dashboard</button>
  <button class="nav-btn" data-page="equipment"><span class="ico">▣</span>Equipment</button>
  <button class="nav-btn" data-page="maintenance"><span class="ico">⚙</span>Maintenance Records</button>
+ <button class="nav-btn" data-page="alerts"><span class="ico">🔔</span>Maintenance Alerts <span id="alertNavCount" style="margin-left:auto;background:#df5b65;color:#fff;border-radius:20px;padding:2px 7px;font-size:10px">0</span></button>
  <button class="nav-btn" data-page="types"><span class="ico">◷</span>Maintenance Types</button>
  <button class="nav-btn" data-page="hours"><span class="ico">◴</span>Operating Hours</button>
  <div class="nav-label">INVENTORY</div>
@@ -202,6 +203,7 @@ th{background:#1a293d!important;color:#b6c5d9!important;border-color:#29384c!imp
   <div class="table-wrap" id="recentEquipment"><div class="loading">Loading equipment…</div></div>
  </section>
  <section id="page-equipment" class="content"><div class="section-head"><div><h3>Equipment register</h3><p>Manage your machines, vehicles and generators</p></div><div class="toolbar"><input class="search" id="equipmentSearch" placeholder="Search equipment…"><button class="btn btn-light" id="exportEquipment">Export CSV</button><button class="btn btn-light" id="importEquipment">Import CSV</button><button class="btn btn-primary" id="addEquipment">＋ Add Equipment</button></div></div><div class="table-wrap" id="equipmentTable"><div class="loading">Loading equipment…</div></div></section>
+ <section id="page-alerts" class="content"><div class="section-head"><div><h3>Maintenance Alerts</h3><p>Live alerts based on equipment meters and preventive schedules</p></div><div class="toolbar"><button class="btn btn-light" id="enableAlarm">Enable Sound & Browser Alerts</button><button class="btn btn-primary" id="refreshAlerts">↻ Refresh Alerts</button></div></div><div class="notice" id="alarmStatus">Alerts are calculated from current equipment operating hours and active preventive schedules. Keep APFC open to receive live sound alerts.</div><div class="stats" style="margin-bottom:16px"><div class="stat"><div class="stat-top">Overdue</div><div class="stat-value" id="alertOverdue" style="color:#df5b65">0</div><div class="stat-note">Maintenance past due</div></div><div class="stat"><div class="stat-top">Due Now</div><div class="stat-value" id="alertDue" style="color:#df5b65">0</div><div class="stat-note">Maintenance due now</div></div><div class="stat"><div class="stat-top">Upcoming</div><div class="stat-value" id="alertUpcoming" style="color:#e99a35">0</div><div class="stat-note">Approaching maintenance</div></div><div class="stat"><div class="stat-top">Total Alerts</div><div class="stat-value" id="alertTotal">0</div><div class="stat-note">Items requiring attention</div></div></div><div class="table-wrap" id="maintenanceAlertsTable"></div></section>
  <section id="page-maintenance" class="content"><div class="section-head"><div><h3>Maintenance records</h3><p>Service history and maintenance costs</p></div><div class="toolbar"><input class="search" id="maintenanceSearch" placeholder="Search records…"><button class="btn btn-primary" id="addMaintenance">＋ Add Record</button></div></div><div class="table-wrap" id="maintenanceTable"><div class="loading">Loading records…</div></div></section>
  <section id="page-types" class="content"><div class="section-head"><div><h3>Maintenance types</h3><p>Configure preventive maintenance intervals</p></div><button class="btn btn-primary" id="addType">＋ Add Type</button></div><div class="table-wrap" id="typesTable"></div></section>
  <section id="page-hours" class="content"><div class="section-head"><div><h3>Operating hours</h3><p>Track equipment usage and daily readings</p></div><div class="toolbar"><button class="btn btn-light" id="exportHours">Export CSV</button><button class="btn btn-light" id="importHours">Import CSV</button><button class="btn btn-primary" id="addHours">＋ Add Reading</button></div></div><div class="table-wrap" id="hoursTable"></div></section>
@@ -241,7 +243,7 @@ equipment_documents:{title:"Add Equipment Document Record",table:"equipment_docu
 purchase_orders:{title:"Create Purchase Order",table:"purchase_orders",fields:[["order_number","Order Number","text",true],["supplier_id","Supplier","fk",true,"suppliers"],["warehouse_id","Warehouse","fk",true,"warehouses"],["order_date","Order Date","date",true],["expected_date","Expected Date","date"],["status","Status","select",false,["Draft","Pending","Approved","Ordered","Partially Received","Received","Cancelled"]],["total_amount","Total Amount","number"],["notes","Notes","textarea"]]}
 };
 const orderColumns={equipment:"created_at",maintenance_types:"created_at",maintenance_records:"maintenance_date",operating_hour_logs:"log_date",spare_parts:"created_at",warehouses:"created_at",suppliers:"created_at",stock_balances:"updated_at",stock_transactions:"transaction_date",work_orders:"created_at",equipment_inspections:"inspection_date",equipment_movements:"movement_date",equipment_documents:"created_at",preventive_maintenance_schedules:"created_at",system_notifications:"created_at",purchase_orders:"order_date"};
-const titles={dashboard:"Dashboard",equipment:"Equipment",maintenance:"Maintenance Records",types:"Maintenance Types",hours:"Operating Hours",parts:"Spare Parts",warehouses:"Warehouses",suppliers:"Suppliers",stock:"Stock Transactions",workorders:"Work Orders",inspections:"Equipment Inspections",movements:"Equipment Movements",schedules:"Preventive Maintenance",documents:"Equipment Documents",notifications:"Notifications",purchases:"Purchase Orders"};
+const titles={dashboard:"Dashboard",equipment:"Equipment",alerts:"Maintenance Alerts",maintenance:"Maintenance Records",types:"Maintenance Types",hours:"Operating Hours",parts:"Spare Parts",warehouses:"Warehouses",suppliers:"Suppliers",stock:"Stock Transactions",workorders:"Work Orders",inspections:"Equipment Inspections",movements:"Equipment Movements",schedules:"Preventive Maintenance",documents:"Equipment Documents",notifications:"Notifications",purchases:"Purchase Orders"};
 function toast(msg){const el=document.getElementById("toast");el.textContent=msg;el.classList.add("show");setTimeout(()=>el.classList.remove("show"),3200)}
 function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
 function fmt(v){return v==null||v===""?"—":esc(v)}
@@ -252,7 +254,60 @@ function table(headers,rows,empty="No records found"){if(!rows.length)return `<d
 function row(cells){return `<tr>${cells.map(x=>`<td>${x}</td>`).join("")}</tr>`}
 async function loadOne(tableName,select="*"){try{let q=db.from(tableName).select(select);const col=orderColumns[tableName];if(col)q=q.order(col,{ascending:false});const {data,error}=await q;if(error)throw error;state[tableName]=data||[];return true}catch(e){console.error("Load "+tableName,e);state[tableName]=[];return false}}
 async function loadAll(){const names=Object.keys(state);const outcomes=await Promise.all(names.map(n=>loadOne(n)));renderAll();const failed=names.filter((n,i)=>!outcomes[i]);const banner=document.getElementById("globalError");if(failed.length){banner.textContent="Some sections could not load: "+failed.join(", ")+". Other sections remain available. Check table permissions or schema for the affected section.";banner.classList.remove("hidden")}else banner.classList.add("hidden")}
-function renderAll(){renderDashboard();renderEquipment();renderMaintenance();renderTypes();renderHours();renderParts();renderWarehouses();renderSuppliers();renderTransactions();renderWorkOrders();renderInspections();renderMovements();renderSchedules();renderDocuments();renderNotifications();renderPurchases()}
+
+let alarmEnabled=false,lastAlarmSignature="",alertAudioContext=null;
+function getMaintenanceAlerts(){
+ const alerts=[],today=new Date();today.setHours(0,0,0,0);
+ const add=(asset,name,dueHours,dueDate,leadHours=50,leadDays=7,source="Equipment maintenance")=>{
+  const meter=Number(asset.current_operating_hours||0),hasHours=dueHours!==null&&dueHours!==undefined&&dueHours!=="";
+  const due=hasHours?Number(dueHours):null,remaining=hasHours?due-meter:null;
+  let dateRemaining=null;
+  if(dueDate){const d=new Date(String(dueDate).slice(0,10)+"T00:00:00");if(!isNaN(d))dateRemaining=Math.ceil((d-today)/86400000)}
+  let level=null,reason="";
+  if((hasHours&&remaining<0)||(dateRemaining!==null&&dateRemaining<0)){level="Overdue";reason=hasHours&&remaining<0?`${Math.abs(remaining).toLocaleString()} operating hours overdue`:`${Math.abs(dateRemaining)} day(s) overdue`}
+  else if((hasHours&&remaining===0)||(dateRemaining!==null&&dateRemaining===0)){level="Due Now";reason=hasHours&&remaining===0?"Operating-hour limit reached":"Calendar due date reached"}
+  else if((hasHours&&remaining<=Math.max(0,Number(leadHours)||0))||(dateRemaining!==null&&dateRemaining<=Math.max(0,Number(leadDays)||0))){
+   level="Upcoming";reason=hasHours&&remaining<=Math.max(0,Number(leadHours)||0)?`${remaining.toLocaleString()} operating hours remaining`:`Due in ${dateRemaining} day(s)`
+  }
+  if(level)alerts.push({code:asset.equipment_code||"—",model:asset.equipment_model||"—",name,dueHours:hasHours?due:null,meter,remaining,dueDate:dueDate||null,level,reason,source});
+ };
+ state.equipment.forEach(asset=>{
+  if(asset.next_maintenance_due_hours!==null&&asset.next_maintenance_due_hours!==undefined&&asset.next_maintenance_due_hours!==""){
+   add(asset,"General maintenance",asset.next_maintenance_due_hours,null,50,0,"Equipment register");
+  }
+ });
+ state.preventive_maintenance_schedules.filter(s=>s.is_active!==false&&String(s.is_active)!=="false").forEach(s=>{
+  const asset=state.equipment.find(e=>String(e.id)===String(s.equipment_id));if(!asset)return;
+  add(asset,s.schedule_name||"Preventive maintenance",s.next_due_hours,s.next_due_date,
+   s.alert_before_hours??50,s.alert_before_days??7,"Preventive schedule");
+ });
+ const priority={Overdue:0,"Due Now":1,Upcoming:2};
+ return alerts.sort((a,b)=>priority[a.level]-priority[b.level]||String(a.code).localeCompare(String(b.code)));
+}
+function renderMaintenanceAlerts(){
+ const alerts=getMaintenanceAlerts(),overdue=alerts.filter(a=>a.level==="Overdue").length,due=alerts.filter(a=>a.level==="Due Now").length,upcoming=alerts.filter(a=>a.level==="Upcoming").length;
+ document.getElementById("alertOverdue").textContent=overdue;document.getElementById("alertDue").textContent=due;
+ document.getElementById("alertUpcoming").textContent=upcoming;document.getElementById("alertTotal").textContent=alerts.length;
+ document.getElementById("alertNavCount").textContent=alerts.length;
+ document.getElementById("maintenanceAlertsTable").innerHTML=table(["Priority","Equipment","Model","Maintenance","Current Hours","Due Hours","Remaining","Due Date","Details","Source"],alerts.map(a=>row([
+  statusTag(a.level==="Upcoming"?"Upcoming":a.level==="Due Now"?"Critical Due":"Overdue"),
+  `<strong>${fmt(a.code)}</strong>`,fmt(a.model),fmt(a.name),fmt(a.meter),fmt(a.dueHours),
+  a.remaining===null?"—":a.remaining<=0?`${Math.abs(a.remaining).toLocaleString()} overdue`:`${a.remaining.toLocaleString()} left`,
+  dateFmt(a.dueDate),fmt(a.reason),fmt(a.source)
+ ])),"No maintenance alerts. All tracked maintenance is within its configured limits.");
+ const signature=alerts.filter(a=>a.level!=="Upcoming").map(a=>a.code+"|"+a.name+"|"+a.level).join(";");
+ if(alarmEnabled&&signature&&signature!==lastAlarmSignature){playMaintenanceAlarm();if("Notification" in window&&Notification.permission==="granted")new Notification("APFC Maintenance Alert",{body:alerts.filter(a=>a.level!=="Upcoming").slice(0,5).map(a=>a.code+": "+a.name+" ("+a.level+")").join("\n")});}
+ lastAlarmSignature=signature;
+}
+function playMaintenanceAlarm(){
+ try{
+  const AC=window.AudioContext||window.webkitAudioContext;if(!AC)return;
+  alertAudioContext=alertAudioContext||new AC();if(alertAudioContext.state==="suspended")alertAudioContext.resume();
+  [0,0.35,0.7].forEach((delay)=>{const osc=alertAudioContext.createOscillator(),gain=alertAudioContext.createGain();osc.connect(gain);gain.connect(alertAudioContext.destination);osc.type="sine";osc.frequency.value=880;gain.gain.setValueAtTime(0.0001,alertAudioContext.currentTime+delay);gain.gain.exponentialRampToValueAtTime(.18,alertAudioContext.currentTime+delay+.02);gain.gain.exponentialRampToValueAtTime(.0001,alertAudioContext.currentTime+delay+.22);osc.start(alertAudioContext.currentTime+delay);osc.stop(alertAudioContext.currentTime+delay+.24)});
+ }catch(e){console.warn("Alarm audio unavailable:",e)}
+}
+
+function renderAll(){renderDashboard();renderEquipment();renderMaintenance();renderTypes();renderHours();renderParts();renderWarehouses();renderSuppliers();renderTransactions();renderWorkOrders();renderInspections();renderMovements();renderSchedules();renderDocuments();renderNotifications();renderPurchases();renderMaintenanceAlerts()}
 function renderDashboard(){const e=state.equipment,m=state.maintenance_records,w=state.work_orders,p=state.spare_parts;document.getElementById("statEquipment").textContent=e.length;document.getElementById("statMaintenance").textContent=m.length;document.getElementById("statWorkOrders").textContent=w.filter(x=>!["completed","cancelled"].includes(String(x.status||"").toLowerCase())).length;document.getElementById("statParts").textContent=p.length;
 const active=e.filter(x=>String(x.status||"").toLowerCase()==="active").length,under=e.filter(x=>String(x.status||"").toLowerCase().includes("maintenance")).length,out=e.filter(x=>String(x.status||"").toLowerCase().includes("out")).length;
 if(window.Chart){if(window.eqChart)window.eqChart.destroy();window.eqChart=new Chart(document.getElementById("equipmentChart"),{type:"doughnut",data:{labels:["Active","Under Maintenance","Out of Service","Other"],datasets:[{data:[active,under,out,Math.max(0,e.length-active-under-out)],backgroundColor:["#3867e8","#e99a35","#df5b65","#d9e1ee"],borderWidth:0,hoverOffset:5}]},options:{maintainAspectRatio:false,cutout:"70%",plugins:{legend:{position:"bottom",labels:{usePointStyle:true,boxWidth:7,padding:17,font:{size:10}}}}}})}
@@ -323,6 +378,14 @@ function closeForm(){document.getElementById("modalBack").classList.remove("show
 document.querySelector("#modalBack .modal").addEventListener("click",e=>e.stopPropagation());
 document.getElementById("modalBack").addEventListener("click",e=>{if(e.target.id==="modalBack")closeForm()});
 document.getElementById("closeModal").onclick=closeForm;document.getElementById("cancelModal").onclick=closeForm;document.getElementById("quickAdd").onclick=()=>openForm("equipment");document.getElementById("refreshNotifications").onclick=async()=>{await loadOne("system_notifications");renderNotifications();toast("Notifications refreshed")};
+document.getElementById("refreshAlerts").onclick=async()=>{await loadAll();toast("Maintenance alerts refreshed")};
+document.getElementById("enableAlarm").onclick=async()=>{
+ alarmEnabled=true;
+ if("Notification" in window&&Notification.permission==="default"){try{await Notification.requestPermission()}catch(e){}}
+ const status=document.getElementById("alarmStatus");
+ status.textContent="Sound alarm is enabled while APFC is open. Browser notifications: "+(("Notification" in window)?Notification.permission:"not supported")+".";
+ playMaintenanceAlarm();renderMaintenanceAlerts();
+};
 const buttons={addEquipment:"equipment",addMaintenance:"maintenance_records",addType:"maintenance_types",addHours:"operating_hour_logs",addPart:"spare_parts",addWarehouse:"warehouses",addSupplier:"suppliers",addTransaction:"stock_transactions",addWorkOrder:"work_orders",addInspection:"equipment_inspections",addMovement:"equipment_movements",addSchedule:"preventive_maintenance_schedules",addDocument:"equipment_documents",addPurchase:"purchase_orders"};Object.entries(buttons).forEach(([id,key])=>document.getElementById(id).onclick=()=>openForm(key));
 document.getElementById("recordForm").addEventListener("submit",async e=>{
  e.preventDefault();if(!activeSpec)return;
@@ -452,5 +515,7 @@ document.getElementById("csvImportFile").addEventListener("change",async e=>{
 });
 
 checkSession();
+setInterval(()=>{if(!document.getElementById("app").classList.contains("hidden"))renderMaintenanceAlerts()},60000);
+setInterval(()=>{if(!document.getElementById("app").classList.contains("hidden"))loadAll()},300000);
 </script>
 </body></html>
