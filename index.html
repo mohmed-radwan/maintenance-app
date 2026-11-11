@@ -208,7 +208,7 @@ th{background:#1a293d!important;color:#b6c5d9!important;border-color:#29384c!imp
  <section id="page-maintenance" class="content"><div class="section-head"><div><h3>Maintenance records</h3><p>Service history and maintenance costs</p></div><div class="toolbar"><input class="search" id="maintenanceSearch" placeholder="Search records…"><button class="btn btn-primary" id="addMaintenance">＋ Add Record</button></div></div><div class="table-wrap" id="maintenanceTable"><div class="loading">Loading records…</div></div></section>
  <section id="page-types" class="content"><div class="section-head"><div><h3>Maintenance types</h3><p>Configure preventive maintenance intervals</p></div><button class="btn btn-primary" id="addType">＋ Add Type</button></div><div class="table-wrap" id="typesTable"></div></section>
  <section id="page-hours" class="content"><div class="section-head"><div><h3>Operating hours</h3><p>Track equipment usage and daily readings</p></div><div class="toolbar"><button class="btn btn-light" id="exportHours">Export CSV</button><button class="btn btn-light" id="importHours">Import CSV</button><button class="btn btn-primary" id="addHours">＋ Add Reading</button></div></div><div class="table-wrap" id="hoursTable"></div></section>
- <section id="page-parts" class="content"><div class="section-head"><div><h3>Spare parts catalogue</h3><p>Part details, suppliers and reorder thresholds</p></div><div class="toolbar"><button class="btn btn-light" id="exportParts">Export CSV</button><button class="btn btn-light" id="importParts">Import CSV</button><button class="btn btn-primary" id="addPart">＋ Add Part</button></div></div><div class="table-wrap" id="partsTable"></div></section>
+ <section id="page-parts" class="content"><div class="section-head"><div><h3>Spare parts catalogue</h3><p>Search by part number or name, and filter stock by warehouse</p></div><div class="toolbar"><input class="search" id="partsSearch" placeholder="Search Part Number or Name…"><select class="search" id="partsWarehouseFilter" aria-label="Filter by warehouse"><option value="">All Warehouses</option></select><button class="btn btn-light" id="exportParts">Export CSV</button><button class="btn btn-light" id="importParts">Import CSV</button><button class="btn btn-primary" id="addPart">＋ Add Part</button></div></div><div class="table-wrap" id="partsTable"></div></section>
  <section id="page-warehouses" class="content"><div class="section-head"><div><h3>Warehouses</h3><p>Storage locations and warehouse details</p></div><button class="btn btn-primary" id="addWarehouse">＋ Add Warehouse</button></div><div class="table-wrap" id="warehousesTable"></div><div class="section-head"><div><h3>Stock balances</h3><p>Current quantity by warehouse and part</p></div></div><div class="table-wrap" id="balancesTable"></div></section>
  <section id="page-suppliers" class="content"><div class="section-head"><div><h3>Suppliers</h3><p>Supplier contacts and purchasing information</p></div><button class="btn btn-primary" id="addSupplier">＋ Add Supplier</button></div><div class="table-wrap" id="suppliersTable"></div></section>
  <section id="page-stock" class="content"><div class="section-head"><div><h3>Stock transactions</h3><p>Receipts, issues, returns and adjustments</p></div><div class="toolbar"><button class="btn btn-light" id="exportTransactions">Export CSV</button><button class="btn btn-primary" id="addTransaction">＋ New Transaction</button></div></div><div class="table-wrap" id="transactionsTable"></div></section>
@@ -329,7 +329,29 @@ function renderHours(){
  const rows=[...latestByEquipment.values()].map(x=>row([dateFmt(x.log_date),fmt(state.equipment.find(e=>String(e.id)===String(x.equipment_id))?.equipment_code),fmt(currentMeter(x.equipment_id)??x.operating_hours),fmt(x.project),fmt(x.location),fmt(x.diesel_consumption),fmt(x.recorded_by)]));
  document.getElementById("hoursTable").innerHTML=table(["Date","Equipment","Current Operating Hours","Project","Location","Diesel Consumption","Recorded By"],rows);
 }
-function renderParts(){document.getElementById("partsTable").innerHTML=table(["Part Code","Part Name","Category","Unit","Supplier","Purchase Price","Minimum Stock"],state.spare_parts.map(x=>row([`<strong>${fmt(x.part_code)}</strong>`,fmt(x.part_name),fmt(x.category),fmt(x.unit),fmt(x.suppliers?.supplier_name||state.suppliers.find(s=>s.id===x.supplier_id)?.supplier_name),fmt(x.purchase_price),fmt(x.minimum_stock)])))}
+function renderParts(){
+ const search=document.getElementById("partsSearch"),filter=document.getElementById("partsWarehouseFilter");
+ const selected=filter?.value||"",term=(search?.value||"").trim().toLowerCase();
+ if(filter){
+  const keep=filter.value;
+  filter.innerHTML='<option value="">All Warehouses</option>'+state.warehouses.map(w=>`<option value="${esc(w.id)}">${esc(w.warehouse_name)}</option>`).join("");
+  if(state.warehouses.some(w=>String(w.id)===String(keep)))filter.value=keep;
+ }
+ const list=state.spare_parts.filter(part=>{
+  const matchesSearch=[part.part_code,part.part_name].join(" ").toLowerCase().includes(term);
+  const balances=state.stock_balances.filter(b=>String(b.spare_part_id)===String(part.id));
+  const matchesWarehouse=!selected||balances.some(b=>String(b.warehouse_id)===String(selected));
+  return matchesSearch&&matchesWarehouse;
+ });
+ document.getElementById("partsTable").innerHTML=table(["Part Number","Part Name","Category","Unit","Supplier","Warehouse Stock","Purchase Price","Minimum Stock"],list.map(part=>{
+  const balances=state.stock_balances.filter(b=>String(b.spare_part_id)===String(part.id)&&(!selected||String(b.warehouse_id)===String(selected)));
+  const stockText=balances.length?balances.map(b=>{
+   const wh=state.warehouses.find(w=>String(w.id)===String(b.warehouse_id));
+   return `<span class="tag">${esc(wh?.warehouse_name||"Warehouse")}: <strong>${fmt(b.quantity)}</strong></span>`;
+  }).join(" "):"—";
+  return row([`<strong>${fmt(part.part_code)}</strong>`,fmt(part.part_name),fmt(part.category),fmt(part.unit),fmt(state.suppliers.find(s=>String(s.id)===String(part.supplier_id))?.supplier_name),stockText,fmt(part.purchase_price),fmt(part.minimum_stock)]);
+ }));
+}
 function renderWarehouses(){document.getElementById("warehousesTable").innerHTML=table(["Code","Warehouse Name","Location","Notes"],state.warehouses.map(x=>row([fmt(x.warehouse_code),`<strong>${fmt(x.warehouse_name)}</strong>`,fmt(x.location),fmt(x.notes)])));document.getElementById("balancesTable").innerHTML=table(["Warehouse","Part Code","Part Name","Quantity","Minimum Stock"],state.stock_balances.map(x=>row([fmt(x.warehouses?.warehouse_name||state.warehouses.find(w=>w.id===x.warehouse_id)?.warehouse_name),fmt(x.spare_parts?.part_code||state.spare_parts.find(p=>p.id===x.spare_part_id)?.part_code),fmt(x.spare_parts?.part_name||state.spare_parts.find(p=>p.id===x.spare_part_id)?.part_name),`<strong>${fmt(x.quantity)}</strong>`,fmt(x.spare_parts?.minimum_stock||state.spare_parts.find(p=>p.id===x.spare_part_id)?.minimum_stock)])))}
 function renderSuppliers(){document.getElementById("suppliersTable").innerHTML=table(["Supplier Code","Supplier Name","Contact Person","Phone","Email","Address"],state.suppliers.map(x=>row([fmt(x.supplier_code),`<strong>${fmt(x.supplier_name)}</strong>`,fmt(x.contact_person),fmt(x.phone),fmt(x.email),fmt(x.address)])))}
 function renderTransactions(){document.getElementById("transactionsTable").innerHTML=table(["Transaction No.","Date","Type","Part","Warehouse","Quantity","Equipment","Unit Price","Reference"],state.stock_transactions.map(x=>row([`<strong>${fmt(x.transaction_number||"Pending SQL setup")}</strong>`,dateFmt(x.transaction_date),statusTag(x.transaction_type),fmt(x.spare_parts?.part_name||state.spare_parts.find(p=>p.id===x.spare_part_id)?.part_name),fmt(x.warehouses?.warehouse_name||state.warehouses.find(w=>w.id===x.warehouse_id)?.warehouse_name),fmt(x.quantity),fmt(state.equipment.find(e=>String(e.id)===String(x.equipment_id))?.equipment_code),fmt(x.unit_price),fmt(x.reference_number)])))}
@@ -354,6 +376,8 @@ db.auth.onAuthStateChange((event,session)=>{if(event==="PASSWORD_RECOVERY"||reco
 document.getElementById("equipmentSearch").addEventListener("input",e=>renderEquipment(e.target.value));
 function filterMaintenance(q=""){q=q.trim().toLowerCase();const filtered=state.maintenance_records.filter(x=>{const asset=state.equipment.find(e=>String(e.id)===String(x.equipment_id))||{};return [asset.equipment_code,asset.equipment_model,asset.serial_number,x.maintenance_description,x.performed_by,x.remarks].join(" ").toLowerCase().includes(q)});document.getElementById("maintenanceTable").innerHTML=table(["Date","Equipment","Maintenance Type","Operating Hours","Description","Total Cost","Performed By","Actions"],filtered.map(x=>row([dateFmt(x.maintenance_date),fmt(state.equipment.find(e=>String(e.id)===String(x.equipment_id))?.equipment_code),fmt(state.maintenance_types.find(t=>String(t.id)===String(x.maintenance_type_id))?.maintenance_name),fmt(x.operating_hours),fmt(x.maintenance_description),fmt(x.total_cost),fmt(x.performed_by),`<button type="button" class="action-btn action-edit" data-maint-edit="${esc(x.id)}">Edit</button><button type="button" class="action-btn action-delete" data-maint-delete="${esc(x.id)}">Delete</button>`])))}
 document.getElementById("maintenanceSearch").addEventListener("input",e=>filterMaintenance(e.target.value));
+document.getElementById("partsSearch").addEventListener("input",()=>renderParts());
+document.getElementById("partsWarehouseFilter").addEventListener("change",()=>renderParts());
 let activeSpec=null;
 let editingEquipmentId=null;
 function openForm(key,record=null){
@@ -407,7 +431,7 @@ document.getElementById("recordForm").addEventListener("submit",async e=>{
    if(!(Number(payload.quantity)>0))throw new Error("Quantity must be greater than zero.");
    if(payload.transaction_type==="Issue"){const bal=state.stock_balances.find(x=>String(x.warehouse_id)===String(payload.warehouse_id)&&String(x.spare_part_id)===String(payload.spare_part_id));const available=Number(bal?.quantity||0);if(Number(payload.quantity)>available)throw new Error("Insufficient stock. Available quantity: "+available)}
   }
-  let result,wasEdit=!!editingRecordId;
+  let result,wasEdit=!!editingRecordId,openingStockSaved=false;
   if(activeSpec.table==="equipment"&&editingEquipmentId)result=await db.from("equipment").update(payload).eq("id",editingEquipmentId);
   else if(activeSpec.table==="maintenance_records"&&editingRecordId)result=await db.from("maintenance_records").update(payload).eq("id",editingRecordId);
   else if(activeSpec.table==="operating_hour_logs"){
@@ -417,8 +441,21 @@ document.getElementById("recordForm").addEventListener("submit",async e=>{
    result=existingLog?await db.from("operating_hour_logs").update(payload).eq("id",existingLog.id):await db.from("operating_hour_logs").insert(payload);
    if(!result.error){const upd=await db.from("equipment").update({current_operating_hours:reading}).eq("id",payload.equipment_id);if(upd.error)throw new Error("Reading saved, but equipment meter update failed: "+upd.error.message)}
   }else if(activeSpec.table==="spare_parts"){
+   const qty=Number(fd.get("opening_quantity")||0),wh=fd.get("opening_warehouse_id"),price=fd.get("opening_unit_price");
+   if(!Number.isFinite(qty)||qty<0)throw new Error("Opening quantity must be zero or greater.");
+   if(qty>0&&!wh)throw new Error("Choose the warehouse where the opening quantity should be stored.");
+   if(price!==""&&(!Number.isFinite(Number(price))||Number(price)<0))throw new Error("Opening unit price must be zero or greater.");
    result=await db.from("spare_parts").insert(payload).select("id").single();
-   if(!result.error){const qty=Number(fd.get("opening_quantity")||0),wh=fd.get("opening_warehouse_id"),price=fd.get("opening_unit_price");if(qty>0){if(!wh)throw new Error("Part created, but choose a warehouse for its opening quantity.");const receipt={warehouse_id:wh,spare_part_id:result.data.id,transaction_type:"Receipt",quantity:qty,transaction_date:new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10),notes:"Opening stock created with new spare part"};if(price!=="")receipt.unit_price=Number(price);const sr=await db.from("stock_transactions").insert(receipt);if(sr.error)throw new Error("Part created, but opening stock failed: "+sr.error.message)}}
+   if(!result.error&&qty>0){
+    const receipt={warehouse_id:wh,spare_part_id:result.data.id,transaction_type:"Receipt",quantity:qty,transaction_date:new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,10),notes:"Opening stock created with new spare part"};
+    if(price!=="")receipt.unit_price=Number(price);
+    const sr=await db.from("stock_transactions").insert(receipt);
+    if(sr.error)throw new Error("Part was created, but stock receipt failed: "+sr.error.message);
+    const check=await db.from("stock_balances").select("quantity").eq("warehouse_id",wh).eq("spare_part_id",result.data.id).maybeSingle();
+    if(check.error)throw new Error("Stock receipt was recorded, but the warehouse balance could not be verified: "+check.error.message);
+    if(!check.data||Math.abs(Number(check.data.quantity)-qty)>0.000001)throw new Error("Stock receipt was recorded, but the warehouse balance was not updated. Please check the stock transaction trigger in Supabase before trying again.");
+    openingStockSaved=true;
+   }
   }else result=await db.from(activeSpec.table).insert(payload);
   if(result.error)throw result.error;
   if(activeSpec.table==="maintenance_records"){
@@ -427,7 +464,7 @@ document.getElementById("recordForm").addEventListener("submit",async e=>{
    const eu=await db.from("equipment").update(patch).eq("id",eqid);if(eu.error)throw new Error("Record saved but equipment update failed: "+eu.error.message);
    if(payload.maintenance_type_id){const sc=await db.from("preventive_maintenance_schedules").update({last_service_hours:hours,last_service_date:payload.maintenance_date,...(next!==null?{next_due_hours:next}:{})}).eq("equipment_id",eqid).eq("maintenance_type_id",payload.maintenance_type_id);if(sc.error)console.warn(sc.error.message)}
   }
-  closeForm();e.target.reset();toast(wasEdit?"Record updated successfully":"Record saved successfully");await loadAll();
+  closeForm();e.target.reset();toast(activeSpec.table==="spare_parts"&&openingStockSaved?"Spare part created and "+fd.get("opening_quantity")+" units added to the selected warehouse.":(wasEdit?"Record updated successfully":"Record saved successfully"));await loadAll();
  }catch(err){console.error("APFC save error:",err);toast("Could not save: "+(err.message||"Unknown error"))}
  finally{btn.disabled=false;btn.textContent="Save record"}
 });
