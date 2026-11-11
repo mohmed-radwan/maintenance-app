@@ -353,7 +353,7 @@ function renderParts(){
  }));
 }
 function renderWarehouses(){
- document.getElementById("warehousesTable").innerHTML=table(["Warehouse Code","Warehouse Name","Location","Notes","Contents"],state.warehouses.map(x=>row([`<strong>${fmt(x.warehouse_code)}</strong>`,`<strong>${fmt(x.warehouse_name)}</strong>`,fmt(x.location),fmt(x.notes),`<button type="button" class="action-btn action-edit" data-warehouse-open="${esc(x.id)}">Open Warehouse</button>`])));
+ document.getElementById("warehousesTable").innerHTML=table(["Warehouse Code","Warehouse Name","Location","Notes","Actions"],state.warehouses.map(x=>row([`<strong>${fmt(x.warehouse_code)}</strong>`,`<strong>${fmt(x.warehouse_name)}</strong>`,fmt(x.location),fmt(x.notes),`<button type="button" class="action-btn action-edit" data-warehouse-open="${esc(x.id)}">Open</button><button type="button" class="action-btn action-edit" data-warehouse-edit="${esc(x.id)}">Edit</button><button type="button" class="action-btn action-delete" data-warehouse-delete="${esc(x.id)}">Delete</button>`])));
  document.getElementById("balancesTable").innerHTML=table(["Warehouse Code","Warehouse Name","Part Code","Part Name","Quantity","Minimum Stock"],state.stock_balances.map(x=>{const w=state.warehouses.find(v=>String(v.id)===String(x.warehouse_id)),p=state.spare_parts.find(v=>String(v.id)===String(x.spare_part_id));return row([fmt(w?.warehouse_code),fmt(w?.warehouse_name),fmt(p?.part_code),fmt(p?.part_name),`<strong>${fmt(x.quantity)}</strong>`,fmt(p?.minimum_stock)])}));
  if(selectedWarehouseId&&state.warehouses.some(w=>String(w.id)===String(selectedWarehouseId)))showWarehouseDetails(selectedWarehouseId);else{selectedWarehouseId=null;document.getElementById("warehouseDetails").classList.add("hidden")}
 }
@@ -453,6 +453,7 @@ document.getElementById("recordForm").addEventListener("submit",async e=>{
   }
   let result,wasEdit=!!editingRecordId,openingStockSaved=false;
   if(activeSpec.table==="equipment"&&editingEquipmentId)result=await db.from("equipment").update(payload).eq("id",editingEquipmentId);
+  else if(activeSpec.table==="warehouses"&&editingRecordId)result=await db.from("warehouses").update(payload).eq("id",editingRecordId);
   else if(activeSpec.table==="maintenance_records"&&editingRecordId)result=await db.from("maintenance_records").update(payload).eq("id",editingRecordId);
   else if(activeSpec.table==="operating_hour_logs"){
    const asset=state.equipment.find(x=>String(x.id)===String(payload.equipment_id));if(!asset)throw new Error("Select a valid equipment item.");
@@ -491,6 +492,32 @@ document.getElementById("recordForm").addEventListener("submit",async e=>{
   closeForm();e.target.reset();toast(activeSpec.table==="spare_parts"&&openingStockSaved?"Spare part created and "+fd.get("opening_quantity")+" units added to the selected warehouse.":(wasEdit?"Record updated successfully":"Record saved successfully"));await loadAll();
  }catch(err){console.error("APFC save error:",err);toast("Could not save: "+(err.message||"Unknown error"))}
  finally{btn.disabled=false;btn.textContent="Save record"}
+});
+
+document.getElementById("warehousesTable").addEventListener("click",async e=>{
+ const edit=e.target.closest("[data-warehouse-edit]"),del=e.target.closest("[data-warehouse-delete]");
+ if(edit){const rec=state.warehouses.find(x=>String(x.id)===String(edit.dataset.warehouseEdit));if(rec)openForm("warehouses",rec)}
+ if(del){
+  const id=del.dataset.warehouseDelete,rec=state.warehouses.find(x=>String(x.id)===String(id));if(!rec)return;
+  if(!confirm("Delete warehouse "+(rec.warehouse_code||"")+" — "+(rec.warehouse_name||"")+"? This cannot be undone."))return;
+  del.disabled=true;
+  try{
+   const checks=[
+    ["stock_balances","stock balances"],
+    ["stock_transactions","stock transactions"],
+    ["purchase_orders","purchase orders"]
+   ];
+   for(const [tableName,label] of checks){
+    const check=await db.from(tableName).select("id").eq("warehouse_id",id).limit(1);
+    if(check.error)throw check.error;
+    if(check.data&&check.data.length)throw new Error("This warehouse is linked to existing "+label+". Remove or reassign those records first; the warehouse was not deleted.");
+   }
+   const {error}=await db.from("warehouses").delete().eq("id",id);if(error)throw error;
+   if(String(selectedWarehouseId)===String(id)){selectedWarehouseId=null;document.getElementById("warehouseDetails").classList.add("hidden")}
+   toast("Warehouse deleted successfully");await loadAll();
+  }catch(err){console.error("Warehouse delete error:",err);toast("Could not delete: "+(err.message||"Unknown error"))}
+  finally{del.disabled=false}
+ }
 });
 
 document.getElementById("partsTable").addEventListener("click",e=>{
